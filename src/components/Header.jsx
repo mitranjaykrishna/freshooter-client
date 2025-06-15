@@ -8,6 +8,7 @@ import {
   AiOutlineUser,
 } from "react-icons/ai";
 import { useNavigate } from "react-router";
+import { StaticRoutes } from "../utils/StaticRoutes";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -48,31 +49,31 @@ export default function Header() {
       {/* Desktop nav + icons */}
       <div className="hidden md:flex items-center space-x-3 relative">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate(StaticRoutes.home)}
           className="hover:underline text-sm"
         >
           Home
         </button>
         <button
-          onClick={() => navigate("/about")}
+          onClick={() => navigate(StaticRoutes.aboutUs)}
           className="hover:underline text-sm"
         >
           About
         </button>
         <button
-          onClick={() => navigate("/contact")}
+          onClick={() => navigate(StaticRoutes.contactUs)}
           className="hover:underline text-sm"
         >
           Contact
         </button>
         <button
-          onClick={() => navigate("/wishlist")}
+          onClick={() => navigate(StaticRoutes.wishlist)}
           className="text-white text-2xl hover:text-secondary"
         >
           <AiOutlineHeart />
         </button>
         <button
-          onClick={() => navigate("/cart")}
+          onClick={() => navigate(StaticRoutes.cart)}
           className="text-white text-2xl hover:text-secondary"
         >
           <AiOutlineShoppingCart />
@@ -88,13 +89,13 @@ export default function Header() {
             <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50">
               <button
                 className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                onClick={() => handleProfileNavigate("/profile")}
+                onClick={() => handleProfileNavigate(StaticRoutes.profile)}
               >
                 Profile
               </button>
               <button
                 className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                onClick={() => handleProfileNavigate("/orders")}
+                onClick={() => handleProfileNavigate(StaticRoutes.orders)}
               >
                 Orders
               </button>
@@ -130,7 +131,7 @@ export default function Header() {
           />
           <button
             onClick={() => {
-              navigate("/");
+              navigate(StaticRoutes.home);
               setIsMobileMenuOpen(false);
             }}
             className="hover:underline text-sm text-left"
@@ -139,7 +140,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => {
-              navigate("/about");
+              navigate(StaticRoutes.aboutUs);
               setIsMobileMenuOpen(false);
             }}
             className="hover:underline text-sm text-left"
@@ -148,7 +149,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => {
-              navigate("/contact");
+              navigate(StaticRoutes.contactUs);
               setIsMobileMenuOpen(false);
             }}
             className="hover:underline text-sm text-left"
@@ -157,7 +158,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => {
-              navigate("/wishlist");
+              navigate(StaticRoutes.wishlist);
               setIsMobileMenuOpen(false);
             }}
             className="text-2xl text-left"
@@ -166,7 +167,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => {
-              navigate("/cart");
+              navigate(StaticRoutes.cart);
               setIsMobileMenuOpen(false);
             }}
             className="text-2xl text-left"
@@ -175,7 +176,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => {
-              navigate("/profile");
+              navigate(StaticRoutes.profile);
               setIsMobileMenuOpen(false);
             }}
             className="hover:underline text-sm text-left"
@@ -184,7 +185,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => {
-              navigate("/orders");
+              navigate(StaticRoutes.orders);
               setIsMobileMenuOpen(false);
             }}
             className="hover:underline text-sm text-left"

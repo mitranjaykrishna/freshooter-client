@@ -13,7 +13,11 @@ export default function ButtonPrimary({
       disabled={loading}
       onClick={handleOnClick}
     >
-      {loading ? `${label || "Submit"}...` : label || "Submit"}
+      {loading ? (
+        <span>{`${label || "Submit"}...`}</span>
+      ) : (
+        <span>{label}</span> || <span>"Submit"</span>
+      )}
     </button>
   );
 }
