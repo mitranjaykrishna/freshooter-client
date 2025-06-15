@@ -6,6 +6,9 @@ import { StaticRoutes } from "../utils/StaticRoutes";
 import Signup from "../pages/Signup";
 import FeedLayout from "./layout/FeedLayout";
 import Home from "../pages/Home";
+import Wishlist from "../pages/Wishlist";
+import Product from "../pages/Product";
+import Cart from "../pages/Cart";
 
 export default function Routing() {
   return (
@@ -18,6 +21,9 @@ export default function Routing() {
           </Route>
           <Route element={<FeedLayout />}>
             <Route path={StaticRoutes?.home} element={<Home />} />
+            <Route path={StaticRoutes?.wishlist} element={<Wishlist />} />
+            <Route path={StaticRoutes?.product} element={<Product />} />
+            <Route path={StaticRoutes?.cart} element={<Cart />} />
           </Route>
         </Routes>
       </BrowserRouter>
