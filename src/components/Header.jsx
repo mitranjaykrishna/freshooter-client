@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import {
   AiOutlineHeart,
@@ -9,12 +9,73 @@ import {
 } from "react-icons/ai";
 import { useLocation, useNavigate } from "react-router";
 import { StaticRoutes } from "../utils/StaticRoutes";
+import { services } from "../utils/services";
+import { StaticApi } from "../utils/StaticApi";
 
 export default function Header() {
   const navigate = useNavigate();
-   const location = useLocation();
+  const location = useLocation();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([{
+    "createdBy": "string",
+    "createdDateTime": "2025-06-28T18:29:15.329Z",
+    "modifiedBy": "string",
+    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
+    "productId": 0,
+    "name": "string",
+    "description": "string",
+    "price": 0,
+    "stockQuantity": 0,
+    "status": 0,
+    "productCode": "string",
+    "category": "string"
+  },
+  {
+    "createdBy": "string",
+    "createdDateTime": "2025-06-28T18:29:15.329Z",
+    "modifiedBy": "string",
+    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
+    "productId": 0,
+    "name": "string",
+    "description": "string",
+    "price": 0,
+    "stockQuantity": 0,
+    "status": 0,
+    "productCode": "string",
+    "category": "string"
+  },
+  {
+    "createdBy": "string",
+    "createdDateTime": "2025-06-28T18:29:15.329Z",
+    "modifiedBy": "string",
+    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
+    "productId": 0,
+    "name": "string",
+    "description": "string",
+    "price": 0,
+    "stockQuantity": 0,
+    "status": 0,
+    "productCode": "string",
+    "category": "string"
+  },
+  {
+    "createdBy": "string",
+    "createdDateTime": "2025-06-28T18:29:15.329Z",
+    "modifiedBy": "string",
+    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
+    "productId": 0,
+    "name": "string",
+    "description": "string",
+    "price": 0,
+    "stockQuantity": 0,
+    "status": 0,
+    "productCode": "string",
+    "category": "string"
+  }]);
 
   const handleProfileToggle = () => {
     setIsProfileMenuOpen((prev) => !prev);
@@ -24,6 +85,35 @@ export default function Header() {
     navigate(path);
     setIsProfileMenuOpen(false);
   };
+
+  const handleSearchInput = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+    const handleResultClick = (link) => {
+    navigate(`/product/${link}`);
+  };
+
+  // Debounced search logic
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim() !== "") {
+        services
+          .get(`${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`)
+          .then((response) => {
+            // setSearchResults(response?.data?.products || []);
+          })
+          .catch((err) => {
+            console.error("Failed to fetch product categories", err);
+            // setSearchResults([]);
+          });
+      } else {
+        // setSearchResults([]);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
 
   return (
     <>
@@ -41,18 +131,44 @@ export default function Header() {
             </span>
           </div>
 
-          {/* Buttons + Search aligned right in desktop */}
+          {/* Desktop Search & Icons */}
           <div className="hidden md:flex items-center space-x-4 ml-auto relative">
             {/* Search Bar */}
-            <div className="w-[26rem]">
+            <div className="w-[26rem] relative">
               <input
+                value={searchTerm}
+                onChange={handleSearchInput}
                 type="text"
                 placeholder="Search products..."
                 className="w-full px-3 py-1 rounded-md text-black border border-transparent ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
               />
+
+              {searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mt-[3px]">
+                  {searchResults.map((product) => (
+                    <div
+                      key={product.productId}
+                      className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
+                      onClick={() => handleResultClick(product.productId)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={product.image || logo}
+                          alt={product.name}
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-gray-600">₹{product.price}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Wishlist + Cart */}
+            {/* Wishlist & Cart */}
             <button
               onClick={() => navigate(StaticRoutes.wishlist)}
               className="text-white text-2xl hover:text-secondary"
@@ -109,14 +225,39 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Search bar on mobile - placed below header */}
+      {/* Mobile Search Bar (only on home page) */}
       {location.pathname === "/" && (
-        <div className="block md:hidden px-4 pt-2 bg-white shadow-sm">
+        <div className="block md:hidden px-4 pt-2 bg-white shadow-sm relative">
           <input
             type="text"
             placeholder="Search products..."
-            className="w-full px-3 py-2 rounded-md text-black border ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-3 py-2  rounded-md text-black border ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
+            value={searchTerm}
+            onChange={handleSearchInput}
           />
+          {searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
+              {searchResults.map((product) => (
+                <div
+                  key={product.productId}
+                  className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
+                  onClick={() => handleResultClick(product.productId)}
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={product.image || logo}
+                      alt={product.name}
+                      className="w-10 h-10 object-cover rounded"
+                    />
+                    <div>
+                      <p className="font-medium">{product.name}</p>
+                      <p className="text-sm text-gray-600">₹{product.price}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
