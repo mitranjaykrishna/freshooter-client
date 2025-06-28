@@ -163,7 +163,7 @@ export default function Product() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-col gap-[10px] justify-between w-full">
           <h1 className="text-2xl font-bold">{product?.name ?? "Hello"}</h1>
           <div className="flex items-center gap-2">
             <span className="text-yellow-500">⭐⭐⭐⭐⭐</span>
@@ -185,7 +185,6 @@ export default function Product() {
           </div>
 
           <div className="text-sm">
-            <span className="font-medium">Availability:</span>{" "}
             {product?.stockQuantity > 0 ? (
               <span className="text-green-600">In Stock ({product?.stockQuantity} available)</span>
             ) : (
@@ -194,7 +193,7 @@ export default function Product() {
           </div>
 
           {/* quantity increase and decrease*/}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-5">
             <button
               className="bg-quaternary text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
               onClick={() => handleQuantityChange(-1)}
@@ -214,7 +213,8 @@ export default function Product() {
 
           {/* total price */}
           <div className="text-lg font-semibold text-primary">
-            Total: ₹{(product?.price * quantity).toFixed(2)}
+            Total: ₹
+            {((Number(product?.price) || 0) * (Number(quantity) || 0)).toFixed(2)}
           </div>
 
           <div className="flex items-center gap-3">
@@ -245,50 +245,61 @@ export default function Product() {
         </div>
       </div>
 
-      <div className="flex w-full h-full border border-quaternary rounded-2xl bg-white">
-        <div className="flex-grow w-full h-full px-5 py-6 flex flex-col gap-5 max-w-[250px]">
-          <h2 className="text-xl font-semibold">Top Selling Products</h2>
-          <div className="grid gap-4">
-            {/* Example Product Card - in a real app these would be mapped from data */}
-            <div className="bg-white border border-quaternary rounded-lg p-4 shadow hover:shadow-lg transition-shadow">
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
-                alt="Product"
-                className="w-full h-40 object-cover rounded-lg mb-3"
-              />
-              <h3 className="text-lg font-semibold">Premium Headphones</h3>
-              <p className="text-sm text-gray-600">₹2,499.99</p>
-            </div>
+      <div className="flex flex-col lg:flex-row w-full h-full border-t border-quaternary border-b bg-white">
+        {/* Top Selling Products - Moves to top on mobile */}
+        <div className="w-full lg:flex-grow lg:max-w-[250px] px-4 py-5 lg:px-5 lg:py-6 flex flex-col gap-4 lg:gap-5 border-b lg:border-b-0 lg:border-r border-quaternary">
+          <h2 className="text-lg lg:text-xl font-semibold">Top Selling Products</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:gap-4">
+            {/* Example Product Cards - should be mapped from data */}
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="bg-white border border-quaternary rounded-lg p-3 lg:p-4 shadow hover:shadow-lg transition-shadow">
+                <img
+                  src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+                  alt="Product"
+                  className="w-full h-28 lg:h-40 object-cover rounded-lg mb-2 lg:mb-3"
+                />
+                <h3 className="text-base lg:text-lg font-semibold line-clamp-1">Premium Headphones</h3>
+                <p className="text-xs lg:text-sm text-gray-600">₹2,499.99</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="flex-grow w-[1px] bg-quaternary"></div>
+        {/* Vertical divider - hidden on mobile */}
+        <div className="hidden lg:block flex-grow w-[1px] bg-quaternary"></div>
 
-        <div className="w-full h-full px-5 pb-6 flex flex-col gap-3 overflow-x-hidden">
-          <FeatureCarousel heading={"Related Products"} category={product?.category} />
+        {/* Main content area */}
+        <div className="w-full h-full px-4 py-5 lg:px-5 lg:pb-6 flex flex-col gap-4 lg:gap-5">
+          {/* Related Products Carousel */}
+          <div className="overflow-x-hidden">
+            <FeatureCarousel heading="Related Products" category={product?.category} />
+          </div>
 
-          <div className="w-full h-full flex flex-col gap-5">
-            <h2 className="text-xl font-semibold">Customer Reviews</h2>
-            <div className="flex flex-col gap-3 mt-3">
-              <div className="p-4 border border-quaternary rounded-lg bg-white">
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-500">⭐⭐⭐⭐⭐</span>
-                  <span className="text-sm text-gray-600">John Doe</span>
+          {/* Customer Reviews */}
+          <div className="w-full h-full flex flex-col gap-4 lg:gap-5">
+            <h2 className="text-lg lg:text-xl font-semibold">Customer Reviews</h2>
+            <div className="flex flex-col gap-3">
+              {[1, 2].map((review) => (
+                <div key={review} className="p-3 lg:p-4 border border-quaternary rounded-lg bg-white">
+                  <div className="flex items-center gap-2">
+                    <span className="text-yellow-500">⭐⭐⭐⭐{review === 1 ? '⭐' : ''}</span>
+                    <span className="text-xs lg:text-sm text-gray-600">
+                      {review === 1 ? 'John Doe' : 'Jane Smith'}
+                    </span>
+                  </div>
+                  <p className="text-sm lg:text-base text-gray-700 mt-1 lg:mt-2">
+                    {review === 1
+                      ? 'This product is amazing! I loved it and will buy again.'
+                      : 'Good quality, but the delivery was a bit slow.'}
+                  </p>
                 </div>
-                <p className="text-gray-700 mt-2">
-                  This product is amazing! I loved it and will buy again.
-                </p>
-              </div>
-              <div className="p-4 border border-quaternary rounded-lg bg-white">
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-500">⭐⭐⭐⭐</span>
-                  <span className="text-sm text-gray-600">Jane Smith</span>
-                </div>
-                <p className="text-gray-700 mt-2">
-                  Good quality, but the delivery was a bit slow.
-                </p>
-              </div>
+              ))}
             </div>
+
+            {/* View All Reviews Button */}
+            <button className="self-start text-primary text-sm lg:text-base font-medium hover:underline mt-2">
+              View all reviews
+            </button>
           </div>
         </div>
       </div>

@@ -7,11 +7,12 @@ import {
   AiOutlineClose,
   AiOutlineUser,
 } from "react-icons/ai";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { StaticRoutes } from "../utils/StaticRoutes";
 
 export default function Header() {
   const navigate = useNavigate();
+   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -109,13 +110,15 @@ export default function Header() {
       </header>
 
       {/* Search bar on mobile - placed below header */}
-      <div className="block md:hidden px-4 pt-2 bg-white shadow-sm">
-        <input
-          type="text"
-          placeholder="Search products..."
-          className="w-full px-3 py-2 rounded-md text-black border ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-      </div>
+      {location.pathname === "/" && (
+        <div className="block md:hidden px-4 pt-2 bg-white shadow-sm">
+          <input
+            type="text"
+            placeholder="Search products..."
+            className="w-full px-3 py-2 rounded-md text-black border ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+      )}
 
       {/* Mobile Menu Items */}
       {isMobileMenuOpen && (
