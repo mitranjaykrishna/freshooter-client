@@ -43,7 +43,7 @@ export default function Header() {
           {/* Buttons + Search aligned right in desktop */}
           <div className="hidden md:flex items-center space-x-4 ml-auto relative">
             {/* Search Bar */}
-            <div className="w-[30rem]">
+            <div className="w-[26rem]">
               <input
                 type="text"
                 placeholder="Search products..."

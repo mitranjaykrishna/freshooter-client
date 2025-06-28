@@ -4,46 +4,111 @@ import { StaticApi } from "../utils/StaticApi";
 import dairydumm from "../assets/dairy-dum.png";
 import HomeHeroCrausal from "../components/SwiperComp/HomeHeroCrausal";
 import FeatureCarousel from "../components/HomeHelper/FeatureCarousel";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Autoplay } from "swiper/modules";
 
 export default function Home() {
-  const [productCat, setProductCat] = useState([
-    { id: 1, name: "Milk", image: dairydumm },
-    { id: 2, name: "Cheese", image: dairydumm },
-    { id: 3, name: "Yogurt", image: dairydumm },
-    { id: 4, name: "Butter", image: dairydumm },
-    { id: 5, name: "Ice Cream", image: dairydumm },
-    { id: 6, name: "Paneer", image: dairydumm },
-  ]);
+  const [productCat, setProductCat] = useState([]);
+  const [products, setProducts] = useState([]);
 
+  // Fetch categories from API
+  const getAllProductCategories = () => {
+    services
+      .get(StaticApi.getAllProductCategory)
+      .then((response) => {
+        if (Array.isArray(response?.data)) {
+          const mapped = response.data.map((item) => ({
+            id: item.categoryId,
+            name: item.name,
+            description: item.description,
+            image: dairydumm, // Replace with item.image if available
+          }));
+          setProductCat(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch product categories", err);
+      });
+  };
+
+  const getAllActivateProducts = () => {
+    services
+      .get(StaticApi.getAllActivateProduct)
+      .then((response) => {
+        console.log(response)
+        if (Array.isArray(response?.data)) {
+          const mapped = response.data.map((item) => ({
+            id: item.productId,
+            name: item.name,
+            price: item?.price,
+            description: item.description,
+            images: item.productImages, 
+            link: item.productId, 
+          }));
+          setProducts(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch product categories", err);
+      });
+  };
+
+  useEffect(() => {
+    getAllProductCategories();
+    getAllActivateProducts();
+
+  }, []);
 
   return (
-    <div className="flex flex-col gap-6 pt-5 w-full">
-      {/* Product Categories Grid */}
-      <div className="px-[220px] w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 items-center justify-center ">
+    <div className="flex flex-col gap-6 pt-[65px] md:pt-[60px] w-full">
+      {/* Category Carousel */}
+      <Swiper
+        slidesPerView={2}
+        spaceBetween={20}
+        breakpoints={{
+          480: { slidesPerView: 3 },
+          640: { slidesPerView: 4 },
+          768: { slidesPerView: 5 },
+          1024: { slidesPerView: 6 },
+        }}
+        autoplay={{
+          delay: 2000,
+          disableOnInteraction: false,
+        }}
+        loop={true}
+        modules={[Autoplay]}
+        className="w-full px-2 sm:px-4 md:px-10 xl:px-16 2xl:px-[220px]"
+      >
         {productCat.map((item) => (
-          <div
-            className="flex flex-col items-center justify-center w-full"
-            key={item.id}
-          >
-            <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 flex flex-col items-center justify-center rounded-full gap-2 bg-white shadow-md p-2 cursor-pointer hover:bg-gradient-to-r from-tertiary from-2% to-primary hover:shadow-lg hover:text-white transition-all">
-              <div className="w-full h-full rounded-full overflow-hidden">
-                <img
-                  src={item?.image}
-                  alt={item?.name}
-                  className="w-full h-full object-cover"
-                />
+          <SwiperSlide key={item.id}>
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 flex items-center justify-center rounded-full bg-white shadow-md p-2 cursor-pointer hover:bg-gradient-to-r from-tertiary to-primary hover:shadow-lg hover:text-white transition-all">
+                <div className="w-full h-full rounded-full overflow-hidden">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
+              <span className="mt-2 text-xs sm:text-sm font-semibold whitespace-nowrap">
+                {item.name}
+              </span>
             </div>
-            <span className="mt-2 text-sm font-semibold">{item?.name}</span>
-          </div>
+          </SwiperSlide>
         ))}
-      </div>
+      </Swiper>
 
+      {/* Hero Carousel */}
       <HomeHeroCrausal />
-      <div className="px-[220px] w-full flex flex-col gap-5">
-        <FeatureCarousel heading={"New Products"} />
-        <FeatureCarousel heading={"Featured Products"} />
-        <FeatureCarousel heading={"Best Selling"} />
+
+      {/* Product Sections */}
+      <div className="w-full px-4 sm:px-6 md:px-10 xl:px-16 2xl:px-[220px] flex flex-col gap-5">
+        <FeatureCarousel heading={"New Products"} data={products} />
+        <FeatureCarousel heading={"Featured Products"}  data={products} />
+        <FeatureCarousel heading={"Best Selling"}  data={products} />
       </div>
     </div>
   );

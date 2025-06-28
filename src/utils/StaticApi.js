@@ -3,4 +3,5 @@ export const StaticApi = {
   signup: "/authentication/createNewUser",
 
   getAllProductCategory: "/productcategory/getAllProductCategory",
+  getAllActivateProduct: "/product/getAllActivateProduct",
 };
