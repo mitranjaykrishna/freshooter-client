@@ -15,18 +15,6 @@ export default function Home() {
     { id: 6, name: "Paneer", image: dairydumm },
   ]);
 
-  // Uncomment this if you want to load categories from API
-  // useEffect(() => {
-  //   services
-  //     .get(StaticApi?.getAllProductCategory)
-  //     .then((response) => {
-  //       console.log("Product Categories:", response.data);
-  //       setProductCat(response.data); // Assuming the API returns array
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching product categories:", error);
-  //     });
-  // }, []);
 
   return (
     <div className="flex flex-col gap-6 pt-5 w-full">
