@@ -4,4 +4,5 @@ export const StaticApi = {
 
   getAllProductCategory: "/productcategory/getAllProductCategory",
   getAllActivateProduct: "/product/getAllActivateProduct",
+  getProductByProductCode: "/product/getProductByProductCode",
 };
