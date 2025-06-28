@@ -40,3 +40,11 @@
 .test {
     color: #4296879a;
 }
+
+@media (max-width: 399px) {
+    .custom-card {
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+}
