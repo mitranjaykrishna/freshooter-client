@@ -12,6 +12,8 @@ import { Autoplay } from "swiper/modules";
 export default function Home() {
   const [productCat, setProductCat] = useState([]);
   const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
   // Fetch categories from API
   const getAllProductCategories = () => {
@@ -44,8 +46,8 @@ export default function Home() {
             name: item.name,
             price: item?.price,
             description: item.description,
-            images: item.productImages, 
-            link: item.productId, 
+            images: item.productImages,
+            link: item.productId,
           }));
           setProducts(mapped);
         }
@@ -54,7 +56,34 @@ export default function Home() {
         console.error("Failed to fetch product categories", err);
       });
   };
+  const handleSearchInput = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
+  const handleResultClick = (link) => {
+    navigate(`/product/${link}`);
+  };
+
+  // Debounced search logic
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim() !== "") {
+        services
+          .get(`${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`)
+          .then((response) => {
+            // setSearchResults(response?.data?.products || []);
+          })
+          .catch((err) => {
+            console.error("Failed to fetch product categories", err);
+            // setSearchResults([]);
+          });
+      } else {
+        // setSearchResults([]);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
   useEffect(() => {
     getAllProductCategories();
     getAllActivateProducts();
@@ -62,7 +91,45 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6 pt-[65px] md:pt-[60px] w-full">
+    <div className="flex flex-col gap-6 w-full">
+
+
+      {/* Hero Carousel */}
+      <HomeHeroCrausal />
+
+
+      <div className="block md:hidden px-4 pt-2 bg-white shadow-sm relative">
+        <input
+          type="text"
+          placeholder="Search products..."
+          className="w-full px-3 py-2  rounded-md text-black border ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
+          value={searchTerm}
+          onChange={handleSearchInput}
+        />
+        {searchResults.length > 0 && (
+          <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
+            {searchResults?.map((product) => (
+              <div
+                key={product.productId}
+                className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
+                onClick={() => handleResultClick(product.productId)}
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={product.image || logo}
+                    alt={product.name}
+                    className="w-10 h-10 object-cover rounded"
+                  />
+                  <div>
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-gray-600">₹{product.price}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       {/* Category Carousel */}
       <Swiper
         slidesPerView={2}
@@ -101,14 +168,11 @@ export default function Home() {
         ))}
       </Swiper>
 
-      {/* Hero Carousel */}
-      <HomeHeroCrausal />
-
       {/* Product Sections */}
       <div className="w-full px-4 sm:px-6 md:px-10 xl:px-16 2xl:px-[220px] flex flex-col gap-5">
         <FeatureCarousel heading={"New Products"} data={products} />
-        <FeatureCarousel heading={"Featured Products"}  data={products} />
-        <FeatureCarousel heading={"Best Selling"}  data={products} />
+        <FeatureCarousel heading={"Featured Products"} data={products} />
+        <FeatureCarousel heading={"Best Selling"} data={products} />
       </div>
     </div>
   );
