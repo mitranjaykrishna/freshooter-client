@@ -16,6 +16,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const searchRef = useRef(null);
+  const isProfileRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -69,6 +70,9 @@ export default function Header() {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchResults([]);
+      }
+      if (isProfileRef.current && !isProfileRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
       }
     };
 
@@ -153,7 +157,7 @@ export default function Header() {
                 <AiOutlineUser />
               </button>
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50">
+                <div ref={isProfileRef} className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50">
                   <button
                     className="w-full text-left px-4 py-2 hover:bg-gray-100"
                     onClick={() => handleProfileNavigate(StaticRoutes.profile)}

@@ -4,6 +4,7 @@ import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
 import dairydumm from "../assets/dairy-dum.png";
 import { Trash2, Minus, Plus } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([{
@@ -51,7 +52,7 @@ export default function Cart() {
   }]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(false);
-
+const navigate = useNavigate()
   const userID = localStorage.getItem("userID");
 
   const getCartItems = () => {
@@ -242,7 +243,7 @@ export default function Cart() {
             </div>
             <button
               className="mt-4 bg-primary hover:bg-secondary text-white py-2 rounded-md text-sm transition"
-              onClick={() => toast.success("Proceeding to checkout...")}
+              onClick={() => navigate("/checkout")}
               disabled={selectedItems.length === 0}
             >
               Proceed to Checkout
