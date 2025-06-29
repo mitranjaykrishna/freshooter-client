@@ -2,7 +2,7 @@ import React from 'react';
 
 const Checkout = () => {
   return (
-    <div className="pt-[100px] px-4 max-w-6xl mx-auto">
+    <div className="pt-[20px] px-4 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-primary text-center">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
