@@ -5,11 +5,12 @@ import { useParams } from "react-router-dom"; // For getting product code from U
 import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Thumbs, FreeMode } from 'swiper/modules';
+import { Thumbs, FreeMode } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
 import 'swiper/css/free-mode';
+import { toast } from "react-toastify";
 
 export default function Product() {
   const { id } = useParams(); // Get product code from URL
@@ -20,6 +21,8 @@ export default function Product() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
+  const [isInCart, setIsInCart] = useState(false);
+
   const getProductDetails = () => {
     setLoading(true);
     setError(null);
@@ -41,9 +44,6 @@ export default function Product() {
         setLoading(false);
       });
   };
-  useEffect(() => {
-    getProductDetails();
-  }, [id]);
 
   const handleQuantityChange = (change) => {
     const newQuantity = quantity + change;
@@ -53,9 +53,103 @@ export default function Product() {
   };
 
   const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
-    // Here you would typically make an API call to update wishlist status
+    setLoading(true);
+    const userID = localStorage.getItem("userID");
+
+    if (!userID) {
+      toast.error("Please log in to use the wishlist.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isWishlisted) {
+      services
+        .get(`${StaticApi.addWishlist}?userId=${userID}&productId=${id}`)
+        .then(() => {
+          setIsWishlisted(true);
+          toast.success("Added to Wishlist");
+        })
+        .catch(() => toast.error("Failed to add to wishlist"))
+        .finally(() => setLoading(false));
+    } else {
+      services
+        .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productId=${id}`)
+        .then(() => {
+          setIsWishlisted(false);
+          toast.info("Removed from Wishlist");
+        })
+        .catch(() => toast.error("Failed to remove from wishlist"))
+        .finally(() => setLoading(false));
+    }
   };
+
+  const handleCart = () => {
+    setLoading(true);
+    const userID = localStorage.getItem("userID");
+
+    if (!userID) {
+      toast.error("Please log in to manage your cart.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isInCart) {
+      // Add to cart
+      services
+        .post(`${StaticApi.addToCart}?userId=${userID}&productId=${id}&quantity=${quantity}`)
+        .then(() => {
+          setIsInCart(true);
+          toast.success("Added to Cart");
+        })
+        .catch(() => {
+          toast.error("Failed to add to cart");
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // Remove from cart
+      services
+        .put(`${StaticApi.removeFromCart}?userId=${userID}&productId=${id}&quantity=${quantity}`)
+        .then(() => {
+          setIsInCart(false);
+          toast.info("Removed from Cart");
+        })
+        .catch(() => {
+          toast.error("Failed to remove from cart");
+        })
+        .finally(() => setLoading(false));
+    }
+  };
+
+  const getUserCart = () => {
+    setLoading(true);
+    const userID = localStorage.getItem("userID");
+
+    if (!userID) {
+      toast.error("User not logged in.");
+      setLoading(false);
+      return;
+    }
+
+    services
+      .post(`${StaticApi.getUserCart}?userId=${userID}`)
+      .then((res) => {
+        const cartItems = res.data?.data || [];
+
+        // Check if current product is in the cart
+        const isPresent = cartItems.some((item) => item.productId == id);
+        setIsInCart(isPresent);
+      })
+      .catch((err) => {
+        console.error("Error fetching user cart:", err);
+        toast.error("Failed to fetch cart data");
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    getProductDetails();
+    getUserCart()
+  }, [id]);
 
   if (loading) {
     return (
@@ -205,7 +299,7 @@ export default function Product() {
             <button
               className="bg-quaternary text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
               onClick={() => handleQuantityChange(1)}
-              disabled={quantity >= product?.stockQuantity}
+            // disabled={quantity >= product?.stockQuantity}
             >
               +
             </button>
@@ -227,8 +321,9 @@ export default function Product() {
             <button
               className="bg-quaternary text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
               disabled={product?.stockQuantity <= 0}
+              onClick={handleCart}
             >
-              Add to Cart
+              {isInCart ? "Remove from Cart" : "Add to Cart"}
             </button>
             <div
               className="text-red-500 cursor-pointer text-2xl"

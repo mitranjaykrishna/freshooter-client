@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import logo from "../assets/logo.png";
 import {
   AiOutlineHeart,
@@ -15,7 +15,7 @@ import { StaticApi } from "../utils/StaticApi";
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const searchRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -90,7 +90,7 @@ export default function Header() {
     setSearchTerm(e.target.value);
   };
 
-    const handleResultClick = (link) => {
+  const handleResultClick = (link) => {
     navigate(`/product/${link}`);
   };
 
@@ -114,7 +114,21 @@ export default function Header() {
 
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchResults([]);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    // document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      // document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
   return (
     <>
       {/* Header */}
@@ -144,8 +158,8 @@ export default function Header() {
               />
 
               {searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mt-[3px]">
-                  {searchResults.map((product) => (
+                <div ref={searchRef} className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mt-[3px]">
+                  {searchResults?.map((product) => (
                     <div
                       key={product.productId}
                       className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
@@ -236,8 +250,8 @@ export default function Header() {
             onChange={handleSearchInput}
           />
           {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
-              {searchResults.map((product) => (
+            <div  className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
+              {searchResults?.map((product) => (
                 <div
                   key={product.productId}
                   className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
