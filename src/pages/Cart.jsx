@@ -122,7 +122,7 @@ export default function Cart() {
       <div className="flex-1 flex flex-col gap-5">
         <div className="p-5 bg-white rounded-sm">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold">Shopping Cart</h1>
+            <h1 className="text-2xl font-bold  text-primary">Shopping Cart</h1>
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input
                 type="checkbox"

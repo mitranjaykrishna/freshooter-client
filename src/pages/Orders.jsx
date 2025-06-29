@@ -47,8 +47,8 @@ export default function Orders() {
     }, []);
 
     return (
-        <div className="px-4 sm:px-6 lg:px-10 xl:px-20 2xl:px-[220px] py-6">
-            <div className="bg-white rounded-xl p-5 border">
+        <div className="px-4  py-6">
+            <div className="bg-white rounded-xl ">
                 <h1 className="text-2xl font-bold mb-4 text-primary">Your Orders</h1>
 
                 {loading ? (
