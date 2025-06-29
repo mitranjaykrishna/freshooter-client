@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import FeatureCarousel from "../components/HomeHelper/FeatureCarousel";
-import { useParams } from "react-router-dom"; // For getting product code from URL
+import { useNavigate, useParams } from "react-router-dom"; // For getting product code from URL
 import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 
 export default function Product() {
   const { id } = useParams(); // Get product code from URL
+  const navigate = useNavigate()
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -315,6 +316,7 @@ export default function Product() {
             <button
               className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
               disabled={product?.stockQuantity <= 0}
+              onClick={()=>navigate('/checkout')}
             >
               Buy Now
             </button>

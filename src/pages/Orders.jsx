@@ -5,27 +5,37 @@ import { toast } from "react-toastify";
 import dairydumm from "../assets/dairy-dum.png";
 
 export default function Orders() {
-    const [orders, setOrders] = useState([{
-        orderId: "ORD123456",
-        orderDate: "28 June 2025",
-        status: "Delivered", // or "Shipped", "Pending"
-        items: [
-            {
-                productId: 11,
-                productName: "Electric Iron",
-                imageUrl: null,
-                quantity: 1,
-                totalPrice: 780
-            },
-            {
-                productId: 12,
-                productName: "Water Bottle",
-                imageUrl: null,
-                quantity: 2,
-                totalPrice: 200
-            }
-        ]
-    }]);
+    const [orders, setOrders] = useState([
+        {
+            orderId: "ORD123456",
+            orderDate: "28 May 2025",
+            status: "Delivered",
+            deliveryDate: "3 June",
+            returnWindow: "13 June 2025",
+            total: 1804,
+            items: [
+                {
+                    productId: 11,
+                    productName: "OnePlus Nord Buds 2r True Wireless in Ear Earbuds with Mic, 12.4mm Drivers",
+                    imageUrl: null,
+                    quantity: 1,
+                    totalPrice: 1804,
+                },
+            ],
+        },
+        {
+            orderId: "ORD123457",
+            orderDate: "27 May 2025",
+            status: "Cancelled",
+            items: [ {
+                    productId: 11,
+                    productName: "OnePlus Nord Buds 2r True Wireless in Ear Earbuds with Mic, 12.4mm Drivers",
+                    imageUrl: null,
+                    quantity: 1,
+                    totalPrice: 1804,
+                },],
+        },
+    ]);
     const [loading, setLoading] = useState(false);
     const userID = localStorage.getItem("userID");
 
@@ -34,7 +44,7 @@ export default function Orders() {
         setLoading(true);
         try {
             const res = await services.post(`${StaticApi.getUserOrders}?userId=${userID}`);
-            setOrders(res?.data?.data || []);
+            // setOrders(res?.data?.data || []);
         } catch (err) {
             toast.error("Failed to fetch orders");
         } finally {
@@ -47,73 +57,94 @@ export default function Orders() {
     }, []);
 
     return (
-        <div className="px-4  py-6">
-            <div className="bg-white rounded-xl ">
-                <h1 className="text-2xl font-bold mb-4 text-primary">Your Orders</h1>
+        <div className="px-4 py-6 max-w-5xl mx-auto">
+            <h1 className="text-2xl font-bold mb-6 text-primary">Your Orders</h1>
 
-                {loading ? (
-                    <p className="text-center text-gray-500 py-10">Loading orders...</p>
-                ) : orders.length === 0 ? (
-                    <p className="text-center text-gray-600 py-10">No orders found.</p>
-                ) : (
-                    <div className="flex flex-col gap-6">
-                        {orders.map((order) => (
-                            <div
-                                key={order.orderId}
-                                className="border rounded-lg p-4 flex flex-col gap-4 shadow-sm"
-                            >
-                                <div className="flex justify-between text-sm text-gray-600">
-                                    <span>Order ID: <span className="text-gray-800 font-medium">{order.orderId}</span></span>
-                                    <span>Placed on: {order.orderDate}</span>
-                                </div>
-
-                                {/* Products */}
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                    {order.items.map((item) => (
-                                        <div
-                                            key={item.productId}
-                                            className="flex gap-4 border rounded-md p-3"
-                                        >
-                                            <img
-                                                src={item.imageUrl || dairydumm}
-                                                alt={item.productName}
-                                                className="w-[80px] h-[80px] object-cover rounded"
-                                            />
-                                            <div className="flex flex-col justify-between">
-                                                <div>
-                                                    <h2 className="font-semibold text-sm text-primary">{item.productName}</h2>
-                                                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                                                </div>
-                                                <span className="text-sm font-medium text-green-600">
-                                                    ₹{item.totalPrice}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Order Summary */}
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-2 gap-2">
-                                    <span className="text-sm">
-                                        Status:{" "}
-                                        <span className={`font-semibold ${order.status === "Delivered" ? "text-green-600" : "text-yellow-600"}`}>
-                                            {order.status}
-                                        </span>
-                                    </span>
-                                    <div className="flex gap-3">
-                                        <button className="px-4 py-1.5 bg-primary text-white text-sm rounded-md hover:bg-secondary transition">
-                                            Track Order
-                                        </button>
-                                        <button className="px-4 py-1.5 border text-sm rounded-md hover:bg-gray-100 transition">
-                                            Invoice
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+            {loading ? (
+                <p className="text-center text-gray-500 py-10">Loading orders...</p>
+            ) : orders.length === 0 ? (
+                <p className="text-center text-gray-600 py-10">No orders found.</p>
+            ) : (
+                <div className="flex flex-col gap-6">
+                  {orders.map((order) => (
+    <div key={order.orderId} className="border rounded-lg p-4 bg-white shadow-sm">
+        {/* Top Summary Bar */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b pb-4 text-sm text-gray-600">
+            <div className="flex gap-4 flex-wrap mb-2 md:mb-0">
+                <span><strong>ORDER PLACED</strong>: {order.orderDate}</span>
+                <span><strong>TOTAL</strong>: ₹{order.total || 0}</span>
+                <span><strong>SHIP TO</strong>: Vaishnavi</span>
             </div>
+            <div className="text-sm text-right">
+                <span className="block"><strong>ORDER #</strong> {order.orderId}</span>
+                <div className="text-blue-600 underline cursor-pointer mt-1">View order details</div>
+            </div>
+        </div>
+
+        {/* Delivery Status or Cancelled */}
+        <div className="mt-4 text-sm">
+            {order.status === "Delivered" && (
+                <>
+                    <p className="text-green-600 font-semibold">Delivered {order.deliveryDate}</p>
+                    <p className="text-gray-600">Package was handed to resident</p>
+                </>
+            )}
+            {order.status === "Cancelled" && (
+                <>
+                    <p className="text-red-600 font-bold text-lg">Cancelled</p>
+                    <p className="text-sm text-gray-700 mt-1">
+                        If you have been charged, a refund will be processed and will be available to you in the next 3–5 business days
+                    </p>
+                </>
+            )}
+        </div>
+
+        {/* Product Info (always show even if cancelled) */}
+        {order.items.map((item) => (
+            <div key={item.productId} className="flex gap-4 py-4 border-b last:border-none">
+                <img
+                    src={item.imageUrl || dairydumm}
+                    alt={item.productName}
+                    className="w-[100px] h-[100px] object-contain rounded"
+                />
+                <div className="flex-1">
+                    <p className="font-medium text-sm text-primary">{item.productName}</p>
+                    <p className="text-sm text-gray-500 mt-1">Qty: {item.quantity}</p>
+                    {order.status === "Delivered" && (
+                        <p className="text-xs text-gray-400 mt-1">
+                            Return window closed on {order.returnWindow}
+                        </p>
+                    )}
+                </div>
+                <div className="text-sm font-semibold text-green-700">₹{item.totalPrice}</div>
+            </div>
+        ))}
+
+        {/* Action Buttons */}
+        {order.status === "Delivered" && (
+            <div className="flex flex-wrap gap-3 mt-4">
+                 <button className="bg-[#4296879a] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300">
+                   Buy Again
+                </button>
+                <button className="bg-[#ff9933] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300">
+                    Get product support
+                </button>
+                <button className="border px-4 py-1.5 rounded-md text-sm hover:bg-gray-100">
+                    Track package
+                </button>
+                <button className="border px-4 py-1.5 rounded-md text-sm hover:bg-gray-100">
+                    Leave seller feedback
+                </button>
+                <button className="border px-4 py-1.5 rounded-md text-sm hover:bg-gray-100">
+                    Write a product review
+                </button>
+            </div>
+        )}
+    </div>
+))}
+
+                </div>
+            )}
         </div>
     );
 }

@@ -5,7 +5,9 @@ import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
 import { Trash2 } from "lucide-react";
+import { useNavigate } from "react-router";
 export default function Wishlist() {
+  const navigate  = useNavigate()
   const [wishlistItems, setWishlistItems] = useState([{
     id: 1,
     name: "Product Name",
@@ -78,8 +80,7 @@ export default function Wishlist() {
   };
 
   const handleBuyNow = (productId) => {
-    toast.success(`Redirecting to checkout for product ${productId}`);
-    // navigation logic here
+    navigate("/checkout")
   };
 
   const handleRemoveFromWishlist = (productId) => {
