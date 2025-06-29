@@ -9,6 +9,7 @@ import Home from "../pages/Home";
 import Wishlist from "../pages/Wishlist";
 import Product from "../pages/Product";
 import Cart from "../pages/Cart";
+import Orders from "../pages/Orders";
 
 export default function Routing() {
   return (
@@ -24,6 +25,7 @@ export default function Routing() {
             <Route path={StaticRoutes?.wishlist} element={<Wishlist />} />
             <Route path={StaticRoutes?.product} element={<Product />} />
             <Route path={StaticRoutes?.cart} element={<Cart />} />
+            <Route path={StaticRoutes?.orders} element={<Orders />} />
           </Route>
         </Routes>
       </BrowserRouter>
