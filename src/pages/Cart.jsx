@@ -3,7 +3,7 @@ import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
 import dairydumm from "../assets/dairy-dum.png";
-import { Trash2 } from "lucide-react";
+import { Trash2, Minus, Plus } from "lucide-react";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([{
@@ -49,6 +49,7 @@ export default function Cart() {
     quantity: 1,
     totalPrice: 780
   }]);
+  const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const userID = localStorage.getItem("userID");
@@ -58,7 +59,9 @@ export default function Cart() {
     services
       .post(`${StaticApi.getUserCart}?userId=${userID}`)
       .then((res) => {
-        setCartItems(res?.data?.data || []);
+        const data = res?.data?.data || [];
+        setCartItems(data);
+        setSelectedItems(data.map((item) => item.productId)); // initially select all
       })
       .catch(() => toast.error("Failed to fetch cart items"))
       .finally(() => setLoading(false));
@@ -72,7 +75,6 @@ export default function Cart() {
           : item
       )
     );
-    // toast.info("Quantity updated (you can implement API here)");
   };
 
   const handleRemove = (productId) => {
@@ -81,12 +83,32 @@ export default function Cart() {
       .then(() => {
         toast.success("Item removed");
         setCartItems((prev) => prev.filter((item) => item.productId !== productId));
+        setSelectedItems((prev) => prev.filter((id) => id !== productId));
       })
       .catch(() => toast.error("Failed to remove item"));
   };
 
+  const toggleSelectAll = () => {
+    if (selectedItems.length === cartItems.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(cartItems.map((item) => item.productId));
+    }
+  };
+
+  const toggleItemSelect = (productId) => {
+    if (selectedItems.includes(productId)) {
+      setSelectedItems((prev) => prev.filter((id) => id !== productId));
+    } else {
+      setSelectedItems((prev) => [...prev, productId]);
+    }
+  };
+
   const totalAmount = cartItems.reduce(
-    (sum, item) => sum + item.totalPrice * item.quantity,
+    (sum, item) =>
+      selectedItems.includes(item.productId)
+        ? sum + item.totalPrice * item.quantity
+        : sum,
     0
   );
 
@@ -99,8 +121,18 @@ export default function Cart() {
       {/* Cart Items */}
       <div className="flex-1 flex flex-col gap-5">
         <div className="p-5 bg-white rounded-sm">
-          <h1 className="text-2xl font-bold mb-2">Shopping Cart</h1>
-          <p className="text-sm text-gray-600 mb-4">Select items to buy or remove.</p>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">Shopping Cart</h1>
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedItems.length === cartItems.length}
+                onChange={toggleSelectAll}
+                className="w-5 h-5"
+              />
+              Select All
+            </label>
+          </div>
 
           {loading ? (
             <p className="text-center py-10 text-gray-500">Loading...</p>
@@ -114,7 +146,12 @@ export default function Cart() {
                 key={item.productId}
                 className="flex flex-col sm:flex-row items-center gap-4 border-b py-4"
               >
-                <input type="checkbox" className="h-5 w-5" />
+                <input
+                  type="checkbox"
+                  className="h-5 w-5"
+                  checked={selectedItems.includes(item.productId)}
+                  onChange={() => toggleItemSelect(item.productId)}
+                />
                 <div className="w-[100px] h-[100px] flex-shrink-0">
                   <img
                     src={item.imageUrl || dairydumm}
@@ -136,22 +173,28 @@ export default function Cart() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 mt-2 text-sm text-gray-600 flex-wrap">
+                    <div className="flex items-center gap-2 bg-quaternary px-2 py-1 rounded-md">
                       <button
                         onClick={() => handleQuantityChange(item.productId, -1)}
-                        className="px-2 py-1 bg-quaternary rounded hover:bg-gray-300"
+                        disabled={item.quantity === 1}
+                        className={`p-1 rounded-md ${
+                          item.quantity === 1
+                            ? "cursor-not-allowed text-gray-400"
+                            : "hover:bg-gray-300"
+                        }`}
                       >
-                        -
+                        <Minus className="w-4 h-4" />
                       </button>
-                      <span>{item.quantity}</span>
+                      <span className="font-semibold">{item.quantity}</span>
                       <button
                         onClick={() => handleQuantityChange(item.productId, 1)}
-                        className="px-2 py-1 bg-quaternary rounded hover:bg-gray-300"
+                        className="p-1 rounded-md hover:bg-gray-300"
                       >
-                        +
+                        <Plus className="w-4 h-4" />
                       </button>
                     </div>
+
                     <span>|</span>
                     <button
                       className="text-red-500 flex items-center gap-1 hover:underline"
@@ -173,11 +216,11 @@ export default function Cart() {
       {/* Fixed Overview Panel */}
       {cartItems.length > 0 && (
         <div className="lg:w-[300px] xl:w-[340px] flex-shrink-0 sticky top-[100px] h-fit">
-          <div className="bg-white border p-5 rounded-2xl flex flex-col gap-4">
+          <div className="bg-white border p-5 rounded-2xl flex flex-col gap-4 max-h-[500px] overflow-y-auto">
             <h2 className="text-lg font-semibold">Order Summary</h2>
             <div className="flex justify-between text-sm">
-              <span>Total Items:</span>
-              <span>{cartItems.length}</span>
+              <span>Total Selected:</span>
+              <span>{selectedItems.length}</span>
             </div>
             <div className="flex justify-between text-sm font-medium">
               <span>Total Price:</span>
@@ -186,6 +229,7 @@ export default function Cart() {
             <button
               className="mt-4 bg-primary hover:bg-secondary text-white py-2 rounded-md text-sm transition"
               onClick={() => toast.success("Proceeding to checkout...")}
+              disabled={selectedItems.length === 0}
             >
               Proceed to Checkout
             </button>
