@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
+import logo from "../assets/logo.png";
 
 const Checkout = () => {
   const [userData, setUserData] = useState({
@@ -28,7 +29,7 @@ const Checkout = () => {
   };
 
   const proceed = () => {
-    const requiredFields = ["phone", "firstName", "lastName", "email", "addressLine1", "addressLine2", "nearLandMark", "city", "state", "pincode", "country"];
+    const requiredFields = ["firstName","lastName", "email", "phone", "addressLine1", "city", "state", "pincode", "country"];
     for (let field of requiredFields) {
       if (!userData[field].value) {
         setUserData((prev) => ({
@@ -49,7 +50,7 @@ const Checkout = () => {
       currency: "INR",
       name: "Kalakaaar Store",
       description: "Checkout Payment",
-      image: "/logo.png",
+      image: logo,
       handler: function (response) {
         alert("Payment successful!");
         console.log("Payment success:", response);
