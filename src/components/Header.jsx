@@ -231,8 +231,9 @@ export default function Header() {
           </button>
           <button
             onClick={() => {
-              navigate("/logout");
+              navigate("/signin");
               setIsMobileMenuOpen(false);
+              localStorage.clear()
             }}
             className="hover:underline text-sm block"
           >
