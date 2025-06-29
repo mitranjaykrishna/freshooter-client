@@ -49,18 +49,12 @@ export default function Signin() {
             navigate(StaticRoutes.home);
           } else {
             toast.error("Login failed! Please check your credentials.");
-            console.error("Login failed:", response.data.message);
           }
         })
         .catch((error) => {
           setLoading(false);
-          console.error("Login error:", error);
           toast.error("Login failed! Please try again.");
-          if (error.response && error.response.data) {
-            toast.error(error.response.data.message || "An error occurred");
-          } else {
-            toast.error("An unexpected error occurred");
-          }
+          toast.error(error.response.data.message || "An error occurred");
         });
     },
   });
@@ -118,11 +112,10 @@ export default function Signin() {
               placeholder="Enter your password"
               required
               autoComplete="current-password"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring ${
-                formik.touched.password && formik.errors.password
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring ${formik.touched.password && formik.errors.password
                   ? "border-red-500 focus:ring-red-300"
                   : "focus:ring-primary"
-              }`}
+                }`}
             />
             <button
               type="button"

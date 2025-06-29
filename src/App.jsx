@@ -1,5 +1,4 @@
 import { Bounce, ToastContainer } from "react-toastify";
-import "./App.css";
 import Routing from "./routes/Routing";
 
 function App() {

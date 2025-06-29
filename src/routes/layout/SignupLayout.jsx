@@ -3,14 +3,8 @@ import { Outlet, useNavigate } from "react-router";
 import { Bounce, ToastContainer } from "react-toastify";
 
 export default function SignupLayout() {
-  const navigate = useNavigate();
-  // useEffect(() => {
-  //   if (localStorage.getItem("token")) {
-  //     navigate("/dashboard");
-  //   }
-  // }, []);
+
   return (
-    <>
       <div className="flex flex-col lg:flex-row-reverse w-screen h-screen">
         {/* Left Panel */}
         <div className="relative w-full lg:w-[62%] h-[56%] lg:h-full">
@@ -20,8 +14,9 @@ export default function SignupLayout() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-green-600/50 to-black-600/60" />
 
           {/* Content */}
-          <div className="relative h-full w-full p-12 flex flex-col justify-center items-end">
-            <div className="max-w-md bg-white/10 backdrop-blur-md p-8 rounded-xl border border-white/20 shadow-xl">
+          <div className="relative h-full w-full p-12 flex flex-col justify-center items-center  custom-card">
+            <div className="max-w-md bg-white/10 backdrop-blur-md p-[12px] shadow-none sm:p-8 sm:shadow-xl rounded-xl border border-white/20">
+
               <h2 className="text-3xl font-bold mb-4 text-white">
                 Welcome to Freshooter
               </h2>
@@ -82,6 +77,5 @@ export default function SignupLayout() {
           <Outlet />
         </div>
       </div>
-    </>
   );
 }

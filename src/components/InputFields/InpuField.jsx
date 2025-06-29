@@ -27,7 +27,7 @@ export default function InpuField({
           className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring ${
             error ? "border-red-500 focus:ring-red-300" : "focus:ring-primary"
           }`}
-          autocomplete="off"
+          autoComplete="off"
         />
         {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
       </div>
