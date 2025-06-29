@@ -31,14 +31,9 @@ export default function Product() {
     services
       .get(`${StaticApi.getProductByProductCode}/${id}`) // Use GET with URL parameter
       .then((response) => {
-        if (response.data && response.data.success) {
-          setProduct(response.data.data);
-        } else {
-          setError(response.data?.message || "Failed to fetch product details");
-        }
+          setProduct(response?.data?.data);
       })
       .catch((err) => {
-        console.error("API Error:", err);
         setError("Failed to load product. Please try again later.");
       })
       .finally(() => {
@@ -126,7 +121,6 @@ export default function Product() {
     const userID = localStorage.getItem("userID");
 
     if (!userID) {
-      toast.error("User not logged in.");
       setLoading(false);
       return;
     }
@@ -160,7 +154,7 @@ export default function Product() {
     );
   }
 
-  if (!error) {
+  if (error) {
     return (
       <div className="px-[220px] py-5 flex justify-center items-center h-64">
         <div className="text-red-500">{error}</div>
@@ -168,7 +162,7 @@ export default function Product() {
     );
   }
 
-  if (product) {
+  if (!product) {
     return (
       <div className="px-[220px] py-5 flex justify-center items-center h-64">
         <div>Product not found</div>
@@ -185,7 +179,7 @@ export default function Product() {
 
   return (
     <div className="py-5 flex flex-col gap-5">
-      <div className="relative flex flex-col md:flex-row gap-5 rounded-2xl p-5 bg-white">
+      <div className="relative flex flex-col md:flex-row gap-5 rounded-2xl p-5 bg-white h-[100vh]">
         <div className="w-full md:w-2/3">
           {/* Sticky container */}
           <div className="sticky top-[80px] flex gap-5">
@@ -288,23 +282,36 @@ export default function Product() {
           </div>
 
           {/* quantity increase and decrease*/}
-          <div className="flex items-center gap-5">
-            <button
-              className="bg-quaternary text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
-              onClick={() => handleQuantityChange(-1)}
-              disabled={quantity <= 1}
-            >
-              -
-            </button>
-            <span className="text-lg font-semibold">{quantity}</span>
-            <button
-              className="bg-quaternary text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
-              onClick={() => handleQuantityChange(1)}
-            // disabled={quantity >= product?.stockQuantity}
-            >
-              +
-            </button>
-          </div>
+ <div className="inline-flex items-center border border-gray-300 rounded-full overflow-hidden shadow-sm w-max">
+  <button
+    className={`px-4 py-1 text-lg font-semibold transition-all ${
+      quantity <= 1
+        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+        : "text-primary hover:bg-gray-200"
+    }`}
+    onClick={() => handleQuantityChange(-1)}
+    disabled={quantity <= 1}
+  >
+    –
+  </button>
+
+  <span className="px-5 py-1 text-base font-medium text-gray-700 bg-white select-none">
+    {quantity}
+  </span>
+
+  <button
+    className={`px-4 py-1 text-lg font-semibold transition-all ${
+      quantity >= product?.stockQuantity
+        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+        : "text-primary hover:bg-gray-200"
+    }`}
+    onClick={() => handleQuantityChange(1)}
+    disabled={quantity >= product?.stockQuantity}
+  >
+    +
+  </button>
+</div>
+
 
           {/* total price */}
           <div className="text-lg font-semibold text-primary">
