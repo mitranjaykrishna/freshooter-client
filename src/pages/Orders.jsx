@@ -3,8 +3,10 @@ import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
 import dairydumm from "../assets/dairy-dum.png";
+import { useNavigate } from "react-router";
 
 export default function Orders() {
+    const navigate = useNavigate()
     const [orders, setOrders] = useState([
         {
             orderId: "ORD123456",
@@ -123,7 +125,7 @@ export default function Orders() {
         {/* Action Buttons */}
         {order.status === "Delivered" && (
             <div className="flex flex-wrap gap-3 mt-4">
-                 <button className="bg-[#4296879a] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300">
+                 <button onClick={()=>navigate('/checkout')} className="bg-[#4296879a] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300">
                    Buy Again
                 </button>
                 <button className="bg-[#ff9933] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300">
