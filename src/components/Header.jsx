@@ -46,14 +46,14 @@ export default function Header() {
         services
           .get(`${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`)
           .then((response) => {
-            // setSearchResults(response?.data?.products || []);
+            setSearchResults(response?.data?.products || []);
           })
           .catch((err) => {
             console.error("Failed to fetch product categories", err);
-            // setSearchResults([]);
+            setSearchResults([]);
           });
       } else {
-        // setSearchResults([]);
+        setSearchResults([]);
       }
     }, 500); // 500ms debounce
 
