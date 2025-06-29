@@ -112,9 +112,9 @@ export default function Header() {
                 <div ref={searchRef} className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mt-[3px]">
                   {searchResults?.map((product) => (
                     <div
-                      key={product.productId}
+                      key={product.productCode}
                       className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
-                      onClick={() => handleResultClick(product.productId)}
+                      onClick={() => handleResultClick(product.productCode)}
                     >
                       <div className="flex items-center gap-3">
                         <img

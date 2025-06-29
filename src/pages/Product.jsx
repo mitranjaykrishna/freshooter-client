@@ -65,7 +65,7 @@ export default function Product() {
 
     if (!isWishlisted) {
       services
-        .get(`${StaticApi.addWishlist}?userId=${userID}&productId=${id}`)
+        .get(`${StaticApi.addWishlist}?userId=${userID}&productCode=${id}`)
         .then(() => {
           setIsWishlisted(true);
           toast.success("Added to Wishlist");
@@ -74,7 +74,7 @@ export default function Product() {
         .finally(() => setLoading(false));
     } else {
       services
-        .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productId=${id}`)
+        .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productCode=${id}`)
         .then(() => {
           setIsWishlisted(false);
           toast.info("Removed from Wishlist");
@@ -97,7 +97,7 @@ export default function Product() {
     if (!isInCart) {
       // Add to cart
       services
-        .post(`${StaticApi.addToCart}?userId=${userID}&productId=${id}&quantity=${quantity}`)
+        .post(`${StaticApi.addToCart}?userId=${userID}&productCode=${id}&quantity=${quantity}`)
         .then(() => {
           setIsInCart(true);
           toast.success("Added to Cart");
@@ -109,7 +109,7 @@ export default function Product() {
     } else {
       // Remove from cart
       services
-        .put(`${StaticApi.removeFromCart}?userId=${userID}&productId=${id}&quantity=${quantity}`)
+        .put(`${StaticApi.removeFromCart}?userId=${userID}&productCode=${id}&quantity=${quantity}`)
         .then(() => {
           setIsInCart(false);
           toast.info("Removed from Cart");
@@ -137,7 +137,7 @@ export default function Product() {
         const cartItems = res.data?.data || [];
 
         // Check if current product is in the cart
-        const isPresent = cartItems.some((item) => item.productId == id);
+        const isPresent = cartItems.some((item) => item.productCode == id);
         setIsInCart(isPresent);
       })
       .catch((err) => {

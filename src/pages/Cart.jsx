@@ -8,42 +8,42 @@ import { Trash2, Minus, Plus } from "lucide-react";
 export default function Cart() {
   const [cartItems, setCartItems] = useState([{
     id: 3,
-    productId: 11,
+    productCode: 11,
     productName: "Electric Iron",
     imageUrl: null,
     quantity: 1,
     totalPrice: 780
   }, {
     id: 1,
-    productId: 12,
+    productCode: 12,
     productName: "Electric Iron",
     imageUrl: null,
     quantity: 1,
     totalPrice: 780
   }, {
     id: 4,
-    productId: 31,
+    productCode: 31,
     productName: "Electric Iron",
     imageUrl: null,
     quantity: 1,
     totalPrice: 780
   }, {
     id: 3,
-    productId: 11,
+    productCode: 11,
     productName: "Electric Iron",
     imageUrl: null,
     quantity: 1,
     totalPrice: 780
   }, {
     id: 1,
-    productId: 12,
+    productCode: 12,
     productName: "Electric Iron",
     imageUrl: null,
     quantity: 1,
     totalPrice: 780
   }, {
     id: 4,
-    productId: 31,
+    productCode: 31,
     productName: "Electric Iron",
     imageUrl: null,
     quantity: 1,
@@ -61,29 +61,29 @@ export default function Cart() {
       .then((res) => {
         const data = res?.data?.data || [];
         setCartItems(data);
-        setSelectedItems(data.map((item) => item.productId)); // initially select all
+        setSelectedItems(data.map((item) => item.productCode)); // initially select all
       })
       .catch(() => toast.error("Failed to fetch cart items"))
       .finally(() => setLoading(false));
   };
 
-  const handleQuantityChange = (productId, change) => {
+  const handleQuantityChange = (productCode, change) => {
     setCartItems((prev) =>
       prev.map((item) =>
-        item.productId === productId
+        item.productCode === productCode
           ? { ...item, quantity: Math.max(1, item.quantity + change) }
           : item
       )
     );
   };
 
-  const handleRemove = (productId) => {
+  const handleRemove = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromCart}?userId=${userID}&productId=${productId}`)
+      .delete(`${StaticApi.removeFromCart}?userId=${userID}&productCode=${productCode}`)
       .then(() => {
         toast.success("Item removed");
-        setCartItems((prev) => prev.filter((item) => item.productId !== productId));
-        setSelectedItems((prev) => prev.filter((id) => id !== productId));
+        setCartItems((prev) => prev.filter((item) => item.productCode !== productCode));
+        setSelectedItems((prev) => prev.filter((id) => id !== productCode));
       })
       .catch(() => toast.error("Failed to remove item"));
   };
@@ -92,21 +92,21 @@ export default function Cart() {
     if (selectedItems.length === cartItems.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(cartItems.map((item) => item.productId));
+      setSelectedItems(cartItems.map((item) => item.productCode));
     }
   };
 
-  const toggleItemSelect = (productId) => {
-    if (selectedItems.includes(productId)) {
-      setSelectedItems((prev) => prev.filter((id) => id !== productId));
+  const toggleItemSelect = (productCode) => {
+    if (selectedItems.includes(productCode)) {
+      setSelectedItems((prev) => prev.filter((id) => id !== productCode));
     } else {
-      setSelectedItems((prev) => [...prev, productId]);
+      setSelectedItems((prev) => [...prev, productCode]);
     }
   };
 
   const totalAmount = cartItems.reduce(
     (sum, item) =>
-      selectedItems.includes(item.productId)
+      selectedItems.includes(item.productCode)
         ? sum + item.totalPrice * item.quantity
         : sum,
     0
@@ -143,15 +143,15 @@ export default function Cart() {
           ) : (
             cartItems.map((item) => (
               <div
-                key={item.productId}
+                key={item.productCode}
                 className="flex flex-col sm:flex-row items-center gap-4 border-b py-4"
               >
                 <div className="relative w-full flex-shrink-0 sm:hidden">
                   <input
                     type="checkbox"
                     className="absolute top-1 left-1 w-4 h-4"
-                    checked={selectedItems.includes(item.productId)}
-                    onChange={() => toggleItemSelect(item.productId)}
+                    checked={selectedItems.includes(item.productCode)}
+                    onChange={() => toggleItemSelect(item.productCode)}
                   />
                   <img
                     src={item.imageUrl || dairydumm}
@@ -163,8 +163,8 @@ export default function Cart() {
                   <input
                     type="checkbox"
                     className="h-5 w-5"
-                    checked={selectedItems.includes(item.productId)}
-                    onChange={() => toggleItemSelect(item.productId)}
+                    checked={selectedItems.includes(item.productCode)}
+                    onChange={() => toggleItemSelect(item.productCode)}
                   />
                   <div className="w-[100px] h-[100px] flex-shrink-0">
                     <img
@@ -191,7 +191,7 @@ export default function Cart() {
                   <div className="flex items-center gap-3 mt-2 text-sm text-gray-600 flex-wrap">
                     <div className="flex items-center gap-2 bg-quaternary px-2 py-1 rounded-md">
                       <button
-                        onClick={() => handleQuantityChange(item.productId, -1)}
+                        onClick={() => handleQuantityChange(item.productCode, -1)}
                         disabled={item.quantity === 1}
                         className={`p-1 rounded-md ${item.quantity === 1
                           ? "cursor-not-allowed text-gray-400"
@@ -202,7 +202,7 @@ export default function Cart() {
                       </button>
                       <span className="font-semibold">{item.quantity}</span>
                       <button
-                        onClick={() => handleQuantityChange(item.productId, 1)}
+                        onClick={() => handleQuantityChange(item.productCode, 1)}
                         className="p-1 rounded-md hover:bg-gray-300"
                       >
                         <Plus className="w-4 h-4" />
@@ -212,7 +212,7 @@ export default function Cart() {
                     <span>|</span>
                     <button
                       className="text-red-500 flex items-center gap-1 hover:underline"
-                      onClick={() => handleRemove(item.productId)}
+                      onClick={() => handleRemove(item.productCode)}
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete

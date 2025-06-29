@@ -42,12 +42,12 @@ export default function Home() {
         console.log(response)
         if (Array.isArray(response?.data)) {
           const mapped = response.data.map((item) => ({
-            id: item.productId,
+            id: item.productCode,
             name: item.name,
             price: item?.price,
             description: item.description,
             images: item.productImages,
-            link: item.productId,
+            link: item.productCode,
           }));
           setProducts(mapped);
         }
@@ -110,9 +110,9 @@ export default function Home() {
           <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
             {searchResults?.map((product) => (
               <div
-                key={product.productId}
+                key={product.productCode}
                 className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
-                onClick={() => handleResultClick(product.productId)}
+                onClick={() => handleResultClick(product.productCode)}
               >
                 <div className="flex items-center gap-3">
                   <img

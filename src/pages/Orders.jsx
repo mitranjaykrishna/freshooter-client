@@ -17,7 +17,7 @@ export default function Orders() {
             total: 1804,
             items: [
                 {
-                    productId: 11,
+                    productCode: 11,
                     productName: "OnePlus Nord Buds 2r True Wireless in Ear Earbuds with Mic, 12.4mm Drivers",
                     imageUrl: null,
                     quantity: 1,
@@ -30,7 +30,7 @@ export default function Orders() {
             orderDate: "27 May 2025",
             status: "Cancelled",
             items: [ {
-                    productId: 11,
+                    productCode: 11,
                     productName: "OnePlus Nord Buds 2r True Wireless in Ear Earbuds with Mic, 12.4mm Drivers",
                     imageUrl: null,
                     quantity: 1,
@@ -103,7 +103,7 @@ export default function Orders() {
 
         {/* Product Info (always show even if cancelled) */}
         {order.items.map((item) => (
-            <div key={item.productId} className="flex gap-4 py-4 border-b last:border-none">
+            <div key={item.productCode} className="flex gap-4 py-4 border-b last:border-none">
                 <img
                     src={item.imageUrl || dairydumm}
                     alt={item.productName}

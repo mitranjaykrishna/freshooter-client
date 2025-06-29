@@ -30,7 +30,7 @@ export default function Wishlist() {
     addedDate: "5 March 2024",
   }]);
   const [loading, setLoading] = useState(false);
-  const [cartProductIds, setCartProductIds] = useState([]);
+  const [cartproductCodes, setCartproductCodes] = useState([]);
   const userID = localStorage.getItem("userID");
 
   const getAllWishlist = async () => {
@@ -45,7 +45,7 @@ export default function Wishlist() {
       const enrichedData = await Promise.all(
         wishlist.map(async (item) => {
           try {
-            const response = await services.get(`${StaticApi.getProductByProductCode}/${item.productId}`);
+            const response = await services.get(`${StaticApi.getProductByProductCode}/${item.productCode}`);
             return { ...item, ...response.data.data };
           } catch {
             return { ...item };
@@ -66,29 +66,29 @@ export default function Wishlist() {
     try {
       const res = await services.post(`${StaticApi.getUserCart}?userId=${userID}`);
       const cartItems = res?.data?.data || [];
-      setCartProductIds(cartItems.map(item => item.productId));
+      setCartproductCodes(cartItems.map(item => item.productCode));
     } catch (err) {
       console.error("Error fetching cart:", err);
       toast.error("Failed to fetch cart");
     }
   };
-  const handleAddToCart = (productId, quantity = 1) => {
+  const handleAddToCart = (productCode, quantity = 1) => {
     services
-      .post(`${StaticApi.addToCart}?userId=${userID}&productId=${productId}&quantity=${quantity}`)
+      .post(`${StaticApi.addToCart}?userId=${userID}&productCode=${productCode}&quantity=${quantity}`)
       .then(() => toast.success("Added to cart"))
       .catch(() => toast.error("Failed to add to cart"));
   };
 
-  const handleBuyNow = (productId) => {
+  const handleBuyNow = (productCode) => {
     navigate("/checkout")
   };
 
-  const handleRemoveFromWishlist = (productId) => {
+  const handleRemoveFromWishlist = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productId=${productId}`)
+      .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productCode=${productCode}`)
       .then(() => {
         toast.success("Removed from wishlist");
-        setWishlistItems((prev) => prev.filter((item) => item.productId !== productId));
+        setWishlistItems((prev) => prev.filter((item) => item.productCode !== productCode));
       })
       .catch(() => toast.error("Failed to remove item"));
   };
@@ -113,7 +113,7 @@ export default function Wishlist() {
             <div className="w-full flex flex-col gap-4">
               {wishlistItems.map((item) => (
                 <div
-                  key={item.productId}
+                  key={item.productCode}
                   className="flex flex-col sm:flex-row items-stretch border border-quaternary rounded-lg overflow-hidden"
                 >
                   {/* Image */}
@@ -141,26 +141,26 @@ export default function Wishlist() {
 
                     {/* Actions */}
                     <div className="flex sm:max-w-[50%] w-full gap-2 mt-2">
-                      {cartProductIds.includes(item.productId) ? (
+                      {cartproductCodes.includes(item.productCode) ? (
                         <ButtonPrimary
                           label="Remove from Cart"
-                          handleOnClick={() => handleRemoveFromCart(item.productId)}
+                          handleOnClick={() => handleRemoveFromCart(item.productCode)}
                         />
                       ) : (
                         <ButtonPrimary
                           label="Add to Cart"
                           handleOnClick={() => {
-                            handleAddToCart(item.productId);
-                            setCartProductIds((prev) => [...prev, item.productId]);
+                            handleAddToCart(item.productCode);
+                            setCartproductCodes((prev) => [...prev, item.productCode]);
                           }}
                         />
                       )}
                       <ButtonPrimary
                         label="Buy Now"
-                        handleOnClick={() => handleBuyNow(item.productId)}
+                        handleOnClick={() => handleBuyNow(item.productCode)}
                       />
                       <button
-                        onClick={() => handleRemoveFromWishlist(item.productId)}
+                        onClick={() => handleRemoveFromWishlist(item.productCode)}
                         className="p-2 border rounded-md hover:bg-red-50 text-red-500 transition-colors"
                         title="Remove from Wishlist"
                       >
