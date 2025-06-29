@@ -20,62 +20,7 @@ export default function Header() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([{
-    "createdBy": "string",
-    "createdDateTime": "2025-06-28T18:29:15.329Z",
-    "modifiedBy": "string",
-    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
-    "productId": 0,
-    "name": "string",
-    "description": "string",
-    "price": 0,
-    "stockQuantity": 0,
-    "status": 0,
-    "productCode": "string",
-    "category": "string"
-  },
-  {
-    "createdBy": "string",
-    "createdDateTime": "2025-06-28T18:29:15.329Z",
-    "modifiedBy": "string",
-    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
-    "productId": 0,
-    "name": "string",
-    "description": "string",
-    "price": 0,
-    "stockQuantity": 0,
-    "status": 0,
-    "productCode": "string",
-    "category": "string"
-  },
-  {
-    "createdBy": "string",
-    "createdDateTime": "2025-06-28T18:29:15.329Z",
-    "modifiedBy": "string",
-    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
-    "productId": 0,
-    "name": "string",
-    "description": "string",
-    "price": 0,
-    "stockQuantity": 0,
-    "status": 0,
-    "productCode": "string",
-    "category": "string"
-  },
-  {
-    "createdBy": "string",
-    "createdDateTime": "2025-06-28T18:29:15.329Z",
-    "modifiedBy": "string",
-    "modifiedDateTime": "2025-06-28T18:29:15.329Z",
-    "productId": 0,
-    "name": "string",
-    "description": "string",
-    "price": 0,
-    "stockQuantity": 0,
-    "status": 0,
-    "productCode": "string",
-    "category": "string"
-  }]);
+  const [searchResults, setSearchResults] = useState([]);
 
   const handleProfileToggle = () => {
     setIsProfileMenuOpen((prev) => !prev);
@@ -250,7 +195,7 @@ export default function Header() {
             onChange={handleSearchInput}
           />
           {searchResults.length > 0 && (
-            <div  className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
+            <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
               {searchResults?.map((product) => (
                 <div
                   key={product.productId}

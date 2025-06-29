@@ -146,18 +146,33 @@ export default function Cart() {
                 key={item.productId}
                 className="flex flex-col sm:flex-row items-center gap-4 border-b py-4"
               >
-                <input
-                  type="checkbox"
-                  className="h-5 w-5"
-                  checked={selectedItems.includes(item.productId)}
-                  onChange={() => toggleItemSelect(item.productId)}
-                />
-                <div className="w-[100px] h-[100px] flex-shrink-0">
+                <div className="relative w-full flex-shrink-0 sm:hidden">
+                  <input
+                    type="checkbox"
+                    className="absolute top-1 left-1 w-4 h-4"
+                    checked={selectedItems.includes(item.productId)}
+                    onChange={() => toggleItemSelect(item.productId)}
+                  />
                   <img
                     src={item.imageUrl || dairydumm}
                     alt={item.productName}
                     className="w-full h-full object-cover rounded-md"
                   />
+                </div>
+                <div className="hidden sm:flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5"
+                    checked={selectedItems.includes(item.productId)}
+                    onChange={() => toggleItemSelect(item.productId)}
+                  />
+                  <div className="w-[100px] h-[100px] flex-shrink-0">
+                    <img
+                      src={item.imageUrl || dairydumm}
+                      alt={item.productName}
+                      className="w-full h-full object-cover rounded-md"
+                    />
+                  </div>
                 </div>
                 <div className="flex-1 w-full">
                   <div className="flex justify-between items-start">
@@ -178,11 +193,10 @@ export default function Cart() {
                       <button
                         onClick={() => handleQuantityChange(item.productId, -1)}
                         disabled={item.quantity === 1}
-                        className={`p-1 rounded-md ${
-                          item.quantity === 1
-                            ? "cursor-not-allowed text-gray-400"
-                            : "hover:bg-gray-300"
-                        }`}
+                        className={`p-1 rounded-md ${item.quantity === 1
+                          ? "cursor-not-allowed text-gray-400"
+                          : "hover:bg-gray-300"
+                          }`}
                       >
                         <Minus className="w-4 h-4" />
                       </button>
