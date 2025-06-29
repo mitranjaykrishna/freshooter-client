@@ -8,6 +8,7 @@ export const StaticApi = {
   searchProducts: "/product/searchProducts",
   addWishlist: "/wishlist/addWishlist",
   removeFromWishlist: "/wishlist/remove",
+  getUserWishlist: "/wishlist/user",
   removeFromCart: "/cart/removeFromCart",
   addToCart: "/cart/addToCart",
   getUserCart: "/cart/user",
