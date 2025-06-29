@@ -16,7 +16,8 @@ export default function Profile() {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        console.log('Logged out');
+        localStorage.clear()
+        navigate('/signin');
     };
 
     const goToOrders = () => {

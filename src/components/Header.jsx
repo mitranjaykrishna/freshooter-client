@@ -59,6 +59,12 @@ export default function Header() {
 
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
+
+  const handleLogout = () => {
+    localStorage.clear()
+    navigate('/signin');
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -162,7 +168,7 @@ export default function Header() {
                   </button>
                   <button
                     className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                    onClick={() => handleProfileNavigate("/logout")}
+                    onClick={handleLogout}
                   >
                     Logout
                   </button>
