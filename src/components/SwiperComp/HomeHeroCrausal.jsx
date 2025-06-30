@@ -31,7 +31,7 @@ export default function HomeHeroCrausal() {
       >
         {swiperData.map((slide) => (
           <SwiperSlide key={slide.id}>
-            <div className="w-full max-h-[600px] overflow-hidden  relative">
+            <div className="w-full max-h-[100vh] overflow-hidden  relative">
               <img
                 src={slide.content}
                 alt={`Slide ${slide.id}`}

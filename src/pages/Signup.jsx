@@ -94,16 +94,7 @@ export default function Signup() {
 
   return (
     <div className="w-full max-w-md mx-auto md:mx-0">
-      {/* {steper > 0 && (
-        <div className="flex items-center absolute top-10">
-          <button
-            onClick={() => setStepper(steper > 0 ? steper - 1 : 0)}
-            className="text-primary hover:text-secondary transition cursor-pointer"
-          >
-            <IoMdArrowBack className=" text-xl" />
-          </button>
-        </div>
-      )} */}
+
 
       <div className="mb-8 text-center md:text-left">
         <h1 className="text-2xl font-bold tracking-tight text-primary">
@@ -198,100 +189,14 @@ export default function Signup() {
             placeholder="Confirm your password"
             error={
               signupFormik.touched.confirmPassword &&
-              signupFormik.errors.confirmPassword
+                signupFormik.errors.confirmPassword
                 ? signupFormik.errors.confirmPassword
                 : ""
             }
           />
         </>
 
-        {/* {steper === 1 && (
-          <>
-            <InpuField
-              value={signupFormik.values.address1}
-              onChange={signupFormik.handleChange}
-              onBlur={signupFormik.handleBlur}
-              name="address1"
-              label="Address Line 1"
-              type="text"
-              placeholder="Enter your address line 1"
-              error={
-                signupFormik.touched.address1 && signupFormik.errors.address1
-                  ? signupFormik.errors.address1
-                  : ""
-              }
-            />
-            <InpuField
-              value={signupFormik.values.address2}
-              onChange={signupFormik.handleChange}
-              onBlur={signupFormik.handleBlur}
-              name="address2"
-              label="Address Line 2"
-              type="text"
-              placeholder="Enter your address line 2 (optional)"
-            />
-            <div className="flex justify-between gap-2">
-              <InpuField
-                value={signupFormik.values.city}
-                onChange={signupFormik.handleChange}
-                onBlur={signupFormik.handleBlur}
-                name="city"
-                label="City"
-                type="text"
-                placeholder="Enter your city"
-                error={
-                  signupFormik.touched.city && signupFormik.errors.city
-                    ? signupFormik.errors.city
-                    : ""
-                }
-              />
-              <InpuField
-                value={signupFormik.values.state}
-                onChange={signupFormik.handleChange}
-                onBlur={signupFormik.handleBlur}
-                name="state"
-                label="State"
-                type="text"
-                placeholder="Enter your state"
-                error={
-                  signupFormik.touched.state && signupFormik.errors.state
-                    ? signupFormik.errors.state
-                    : ""
-                }
-              />
-            </div>
-            <div className="flex justify-between gap-2">
-              <InpuField
-                value={signupFormik.values.zip}
-                onChange={signupFormik.handleChange}
-                onBlur={signupFormik.handleBlur}
-                name="zip"
-                label="Zip Code"
-                type="text"
-                placeholder="Enter your zip code"
-                error={
-                  signupFormik.touched.zip && signupFormik.errors.zip
-                    ? signupFormik.errors.zip
-                    : ""
-                }
-              />
-              <InpuField
-                value={signupFormik.values.country}
-                onChange={signupFormik.handleChange}
-                onBlur={signupFormik.handleBlur}
-                name="country"
-                label="Country"
-                type="text"
-                placeholder="Enter your country"
-                error={
-                  signupFormik.touched.country && signupFormik.errors.country
-                    ? signupFormik.errors.country
-                    : ""
-                }
-              />
-            </div>
-          </>
-        )} */}
+
 
         <ButtonPrimary
           label={"Submit"}

@@ -8,6 +8,7 @@ export const StaticRoutes = {
   cart: "/cart",
   profile: "/profile",
   orders: "/orders",
+  checkout: "/checkout",
   product: "/product/:id",
   notFound: "/not-found",
 };
