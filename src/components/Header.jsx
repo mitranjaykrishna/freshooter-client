@@ -41,25 +41,25 @@ export default function Header() {
   };
 
   // Debounced search logic
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      if (searchTerm.trim() !== "") {
-        services
-          .get(`${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`)
-          .then((response) => {
-            setSearchResults(response?.data?.products || []);
-          })
-          .catch((err) => {
-            console.error("Failed to fetch product categories", err);
-            setSearchResults([]);
-          });
-      } else {
-        setSearchResults([]);
-      }
-    }, 500); // 500ms debounce
+ useEffect(() => {
+  const delayDebounce = setTimeout(() => {
+    if (searchTerm.trim() !== "") {
+      services
+        .get(`${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`)
+        .then((response) => {
+          setSearchResults([...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data]);
+        })
+        .catch((err) => {
+          setSearchResults([]);
+        });
+    } else {
+      setSearchResults([]);
+    }
+  }, 500);
 
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
+  return () => clearTimeout(delayDebounce);
+}, [searchTerm]);
+
 
   const handleLogout = () => {
     localStorage.clear()
@@ -112,6 +112,7 @@ export default function Header() {
                 className="w-full px-3 py-1 rounded-md text-black border border-transparent ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
               />
 
+
               {searchResults.length > 0 && (
                 <div ref={searchRef} className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mt-[3px]">
                   {searchResults?.map((product) => (
@@ -120,16 +121,9 @@ export default function Header() {
                       className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
                       onClick={() => handleResultClick(product.productCode)}
                     >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.image || logo}
-                          alt={product.name}
-                          className="w-10 h-10 object-cover rounded"
-                        />
-                        <div>
+                      <div className="flex items-center justify-between gap-3">
                           <p className="font-medium">{product.name}</p>
                           <p className="text-sm text-gray-600">₹{product.price}</p>
-                        </div>
                       </div>
                     </div>
                   ))}

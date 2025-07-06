@@ -5,7 +5,7 @@ export const StaticApi = {
   getAllProductCategory: "/productcategory/getAllProductCategory",
   getAllActivateProduct: "/product/getAllActivateProduct",
   getProductByProductCode: "/product/getProductByProductCode",
-  searchProducts: "/product/searchProducts",
+  searchProducts: "/product/searchProduct",
   addWishlist: "/wishlist/addWishlist",
   removeFromWishlist: "/wishlist/remove",
   getUserWishlist: "/wishlist/user",

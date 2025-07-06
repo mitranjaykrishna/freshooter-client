@@ -4,6 +4,10 @@ import {
   AiOutlineInstagram,
   AiOutlineYoutube,
 } from "react-icons/ai";
+import amex from "../assets/amex.png";
+import mastercard from "../assets/mastercard.png";
+import rupay from "../assets/rupay.png";
+import visa from "../assets/visa.png";
 
 export default function Footer() {
   return (
@@ -77,10 +81,10 @@ export default function Footer() {
           </ul>
           <div className="flex flex-wrap gap-3 items-center">
             {[
-              ["Visa", "https://seeklogo.com/images/V/visa-logo-6F4057663D-seeklogo.com.png"],
-              ["Mastercard", "https://seeklogo.com/images/M/mastercard-logo-5E5CD2E1E0-seeklogo.com.png"],
-              ["RuPay", "https://seeklogo.com/images/R/rupay-logo-0F0C69B4D6-seeklogo.com.png"],
-              ["Amex", "https://seeklogo.com/images/A/american-express-logo-B131554071-seeklogo.com.png"],
+              ["Visa", visa],
+              ["Mastercard", mastercard],
+              ["RuPay", rupay],
+              ["Amex", amex],
             ].map(([name, src], i) => (
               <img
                 key={i}

@@ -49,18 +49,10 @@ export default function Product() {
   };
 
   const toggleWishlist = () => {
-    setLoading(true);
-    const userID = localStorage.getItem("userID");
-
-    if (!userID) {
-      toast.error("Please log in to use the wishlist.");
-      setLoading(false);
-      return;
-    }
 
     if (!isWishlisted) {
       services
-        .get(`${StaticApi.addWishlist}?userId=${userID}&productCode=${id}`)
+        .post(`${StaticApi.addWishlist}?userId=${userID}&productCode=${id}`)
         .then(() => {
           setIsWishlisted(true);
           toast.success("Added to Wishlist");
@@ -80,19 +72,11 @@ export default function Product() {
   };
 
   const handleCart = () => {
-    setLoading(true);
-    const userID = localStorage.getItem("userID");
-
-    if (!userID) {
-      toast.error("Please log in to manage your cart.");
-      setLoading(false);
-      return;
-    }
-
+    
     if (!isInCart) {
       // Add to cart
       services
-        .post(`${StaticApi.addToCart}?userId=${userID}&productCode=${id}&quantity=${quantity}`)
+        .post(`${StaticApi.addToCart}?productId=1&quantity=${quantity}`)
         .then(() => {
           setIsInCart(true);
           toast.success("Added to Cart");
@@ -329,7 +313,7 @@ export default function Product() {
             </button>
             <button
               className="bg-quaternary text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
-              disabled={product?.stockQuantity <= 0}
+              // disabled={product?.stockQuantity <= 0}
               onClick={handleCart}
             >
               {isInCart ? "Remove from Cart" : "Add to Cart"}
