@@ -1,11 +1,14 @@
 // --- Imports ---
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import amex from "../assets/amex.png";
+import mastercard from "../assets/mastercard.png";
+import rupay from "../assets/rupay.png";
+import visa from "../assets/visa.png";
 import logo from "../assets/logo.png";
 import ButtonPrimary from "../components/Buttons/ButtonPrimary";
 import { StaticApi } from "../utils/StaticApi";
 import { services } from "../utils/services";
-import { toast } from "react-toastify";
-
 // --- Checkout Component ---
 const Checkout = () => {
   const [selectedPayment, setSelectedPayment] = useState("card");
@@ -15,7 +18,8 @@ const Checkout = () => {
   const [addressList, setAddressList] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showMore, setShowMore] = useState(false);
-
+const [showCardModal, setShowCardModal] = useState(false);
+const [upiId, setUpiId] = useState("");
   const [newAddress, setNewAddress] = useState({
     addressLine1: "",
     addressLine2: "",
@@ -201,8 +205,12 @@ const Checkout = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4">Payment method</h2>
         <div className="grid gap-4">
-          <PaymentMethodCard label="Credit or Debit Card" selected={selectedPayment === "card"} onChange={() => setSelectedPayment("card")} />
-          <PaymentMethodCard label="UPI" selected={selectedPayment === "upi"} onChange={() => setSelectedPayment("upi")} />
+          <CardPaymentOption setShowCardModal={setShowCardModal}  selected={selectedPayment === "card"} onChange={() => setSelectedPayment("card")}/>
+        <UpiInputCard selected={selectedPayment === "upi"}
+  onChange={() => setSelectedPayment("upi")}
+  upiId={upiId}
+  setUpiId={setUpiId}
+  onVerify={() => console.log("Verifying", upiId)}/>
           <PaymentMethodCard label="Cash on Delivery" selected={selectedPayment === "cod"} onChange={() => setSelectedPayment("cod")} />
         </div>
       </div>
@@ -285,6 +293,16 @@ const Checkout = () => {
           </div>
         </div>
       )}
+
+      {showCardModal && (
+  <AddCardModal
+    onClose={() => setShowCardModal(false)}
+    onSubmit={(cardData) => {
+      console.log("New Card:", cardData);
+      setShowCardModal(false);
+    }}
+  />
+)}
     </div>
   );
 };
@@ -370,3 +388,226 @@ const InputField = ({ label, type = "text", value, onChange, error }) => (
     {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
   </div>
 );
+
+
+const CardPaymentOption = ({ selected, onChange ,setShowCardModal}) => {
+  return (
+    <label className="block border  rounded-lg p-4 w-full cursor-pointer transition">
+      <div className="flex items-center mb-3">
+        <input
+          type="radio"
+          name="payment"
+          checked={selected}
+          onChange={onChange}
+          className="mr-2"
+        />
+        <span className="font-medium text-lg">Credit or debit card</span>
+      </div>
+
+      {/* Card Logos */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {[visa, mastercard, amex,  rupay].map((img, i) => (
+          <img key={i} src={img} alt="Card" className="w-10 h-auto" />
+        ))}
+      </div>
+
+      {/* Saved Card */}
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-blue-600 font-medium hover:underline cursor-pointer"  onClick={() => setShowCardModal(true)}>
+          Add a new credit or debit card
+        </span>
+      </div>
+
+      <p className="text-sm text-gray-600 mt-1">
+        We accepts all major credit & cards
+      </p>
+    </label>
+  );
+};
+
+const AddCardModal = ({ onClose, onSubmit }) => {
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: "",
+    nickname: "",
+    expiryMonth: "01",
+    expiryYear: "2025",
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (field, value) => {
+    setCardDetails((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!/^\d{16}$/.test(cardDetails.cardNumber)) {
+      newErrors.cardNumber = "Card number must be 16 digits";
+    }
+    if (!cardDetails.nickname.trim()) {
+      newErrors.nickname = "Nickname is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (validate()) {
+      onSubmit(cardDetails);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/55 bg-opacity-40 backdrop-blur-sm flex items-center justify-center px-2">
+      <div className="bg-white w-full max-w-3xl rounded shadow-lg p-6 relative flex flex-col sm:flex-row gap-6">
+        {/* Close Button */}
+        <button
+          className="absolute top-3 right-3 text-xl text-gray-700 hover:text-black border border-gray-300 rounded-lg px-2"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+        {/* Left Form */}
+        <div className="flex-1">
+          <h2 className="font-bold text-lg mb-4">Add a new credit or debit card</h2>
+          <div className="space-y-4">
+            {/* Card number */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="font-medium col-span-1">Card number</label>
+              <div className="col-span-3">
+                <input
+                  type="text"
+                  value={cardDetails.cardNumber}
+                  onChange={(e) => handleChange("cardNumber", e.target.value)}
+                  placeholder="Enter card number"
+                  className="border w-full p-2 rounded"
+                />
+                {errors.cardNumber && (
+                  <p className="text-red-500 text-sm mt-1">{errors.cardNumber}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Nickname */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="font-medium col-span-1">Nickname</label>
+              <div className="col-span-3">
+                <input
+                  type="text"
+                  value={cardDetails.nickname}
+                  onChange={(e) => handleChange("nickname", e.target.value)}
+                  placeholder="Eg. Vaishnavi"
+                  className="border w-full p-2 rounded"
+                />
+                {errors.nickname && (
+                  <p className="text-red-500 text-sm mt-1">{errors.nickname}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Expiry */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="font-medium col-span-1">Expiry date</label>
+              <div className="col-span-3 flex gap-3">
+                <select
+                  value={cardDetails.expiryMonth}
+                  onChange={(e) => handleChange("expiryMonth", e.target.value)}
+                  className="border rounded p-2 w-24"
+                >
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const month = (i + 1).toString().padStart(2, "0");
+                    return (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    );
+                  })}
+                </select>
+                <select
+                  value={cardDetails.expiryYear}
+                  onChange={(e) => handleChange("expiryYear", e.target.value)}
+                  className="border rounded p-2 w-28"
+                >
+                  {Array.from({ length: 10 }, (_, i) => {
+                    const year = (new Date().getFullYear() + i).toString();
+                    return <option key={year} value={year}>{year}</option>;
+                  })}
+                </select>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-start gap-3 mt-4">
+              <button
+                className="border rounded px-4 py-2 text-gray-700"
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-yellow-400 text-black font-semibold px-5 py-2 rounded hover:bg-yellow-500"
+                onClick={handleSubmit}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Info */}
+        <div className="w-full sm:w-1/3 border-t sm:border-t-0 sm:border-l sm:pl-6 pt-4 sm:pt-0 flex flex-col items-center justify-start">
+          <p className="text-sm mb-4">
+            Please ensure that you enable your card for online payments from your bank’s app.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[visa, mastercard, amex, rupay].map((img, i) => (
+              <img key={i} src={img} alt="Card" className="w-10 h-auto" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
+  return (
+    <label className="block border  rounded-lg p-4">
+      <div className="flex items-center gap-3 mb-2">
+        <input
+          type="radio"
+          name="payment"
+          checked={selected}
+          onChange={onChange}
+          className="accent-primary"
+        />
+        <span className="font-semibold text-lg">Other UPI Apps</span>
+      </div>
+
+      <p className="mb-2 text-sm font-medium">Please enter your UPI ID</p>
+
+      <div className="flex items-center gap-2 mb-2">
+        <input
+          type="text"
+          placeholder="Enter UPI ID"
+          value={upiId}
+          onChange={(e) => setUpiId(e.target.value)}
+          className="border rounded px-3 py-2 w-60"
+        />
+        <button
+          onClick={onVerify}
+          className="bg-yellow-100 text-yellow-700 font-medium px-4 py-2 rounded border border-yellow-300 hover:bg-yellow-200"
+        >
+          Verify
+        </button>
+      </div>
+
+      <p className="text-sm text-gray-700">
+        The UPI ID is in the format of <span className="font-medium">name/phone number@bankname</span>
+      </p>
+    </label>
+  );
+};
