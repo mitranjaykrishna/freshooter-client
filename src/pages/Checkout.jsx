@@ -19,6 +19,8 @@ const Checkout = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showMore, setShowMore] = useState(false);
 const [showCardModal, setShowCardModal] = useState(false);
+  const [checkoutProducts, setCheckoutProducts] = useState([]);
+
 const [upiId, setUpiId] = useState("");
   const [newAddress, setNewAddress] = useState({
     addressLine1: "",
@@ -40,52 +42,32 @@ const [upiId, setUpiId] = useState("");
     error: {},
   });
 
-  const handleInputChange = (field, value) => {
-    setUserData((prev) => ({ ...prev, [field]: value }));
-  };
+const subtotal = checkoutProducts.reduce(
+  (sum, item) => sum + item.totalPrice * item.quantity,
+  0
+);
+const handlePayment = () => {
+  if (selectedAddress === null) {
+    toast.error("Please select a delivery address");
+    return;
+  }
 
-  const validate = () => {
-    const required = ["firstName", "lastName", "email", "phone"];
-    let isValid = true;
-    let newError = {};
-
-    required.forEach((field) => {
-      if (!userData[field]) {
-        newError[field] = `Enter valid ${field}`;
-        isValid = false;
-      }
+  services
+    .post(StaticApi.placeOrder, {
+      address: addressList[selectedAddress],
+      paymentMethod: selectedPayment,
+      products: checkoutProducts, // send selected products here
+    })
+    .then(() => {
+      toast.success("Order placed successfully");
+      localStorage.removeItem("selectedCheckoutItems"); // Clear after placing order
+      // Optionally redirect to thank-you page
+    })
+    .catch(() => {
+      toast.error("Failed to place order");
     });
+};
 
-    setUserData((prev) => ({ ...prev, error: newError }));
-    return isValid;
-  };
-
-  const handlePayment = () => {
-    if (!validate()) return;
-
-    const options = {
-      key: "rzp_test_YourTestKey",
-      amount: 138100,
-      currency: "INR",
-      name: "Kalakaaar Store",
-      description: "Order Payment",
-      image: logo,
-      handler: (response) => {
-        alert("Payment Successful!");
-        console.log("Payment response", response);
-      },
-      prefill: {
-        name: `${userData.firstName} ${userData.lastName}`,
-        email: userData.email,
-        contact: userData.phone,
-      },
-      theme: {
-        color: "#429686",
-      },
-    };
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  };
 
   const handleAddAddress = () => {
     const requiredFields = ["addressLine1", "city", "state", "postalCode", "country"];
@@ -172,7 +154,13 @@ services.delete(`${StaticApi.deleteAddress}/${addressId}`).then(() => {
 
   useEffect(() => {
     getAllAddress();
+     const stored = localStorage.getItem("selectedCheckoutItems");
+  if (stored) {
+    setCheckoutProducts(JSON.parse(stored));
+  }
   }, []);
+
+
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -236,10 +224,12 @@ services.delete(`${StaticApi.deleteAddress}/${addressId}`).then(() => {
       {/* Order Summary */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-        <OrderItem name="OnePlus Nord Buds" price={1381} />
-        <PriceSummary subtotal={1381} shipping={0} />
+      {checkoutProducts.map((item, idx) => (
+  <OrderItem key={idx} name={item.productName} price={item.totalPrice * item.quantity} />
+))}
+       <PriceSummary subtotal={subtotal} shipping={0} />
         <div className="mt-6">
-          <ButtonPrimary label="Use this payment method" onClick={handlePayment} />
+          <ButtonPrimary label="Use this payment method" handleOnClick={handlePayment} />
         </div>
       </div>
 

@@ -17,5 +17,6 @@ export const StaticApi = {
   updateAddress: "/user/address/updateAddress",
   deleteAddress: "/user/address/deleteAddress",
   setDefaultAddress: "/user/address/setDefaultAddress",
+  placeOrder: "/order/placeOrder",
 
 };

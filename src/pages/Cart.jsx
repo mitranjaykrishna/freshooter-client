@@ -13,7 +13,6 @@ export default function Cart() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(false);
 const navigate = useNavigate()
-  const userID = localStorage.getItem("userID");
 
   const getCartItems = () => {
     setLoading(true);
@@ -212,7 +211,19 @@ const navigate = useNavigate()
             </div>
             <button
               className="mt-4 bg-primary hover:bg-secondary text-white py-2 rounded-md text-sm transition"
-              onClick={() => navigate("/checkout")}
+             onClick={() => {
+  const selectedProductDetails = cartItems
+    .filter((item) => selectedItems.includes(item.productCode))
+    .map((item) => ({
+      productCode: item.productCode,
+      quantity: item.quantity,
+      totalPrice: item.totalPrice,
+      productName: item.productName,
+    }));
+
+  localStorage.setItem("selectedCheckoutItems", JSON.stringify(selectedProductDetails));
+  navigate("/checkout");
+}}
               disabled={selectedItems.length === 0}
             >
               Proceed to Checkout
