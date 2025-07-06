@@ -345,8 +345,35 @@ const discountedPrice = hasDiscount
       ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
       : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
   }`}
-  disabled={product?.stockQuantity <= 0}
-  onClick={() => navigate("/checkout")}
+  // disabled={product?.stockQuantity <= 0}
+  onClick={() => {
+    const buyNowItem = {
+      productId: product?.productId,
+      productCode: product?.productCode,
+      name: product?.name,
+      imageUrl: product?.imageUrl || productImages?.[0],
+      price: discountedPrice,
+      quantity,
+      totalPrice: discountedPrice * quantity,
+    };
+
+    localStorage.setItem("buyNowProduct", JSON.stringify(buyNowItem));
+    navigate("/checkout");
+
+      // services
+      // .post(`${StaticApi.directOrder}?productCode=${product?.productCode}&quantity=${quantity}`)
+      // .then((res) => {
+      //   const cartItems = res.data?.data || [];
+
+      //   // Check if current product is in the cart
+      //   const isPresent = cartItems.some((item) => item.productCode == id);
+      //   setIsInCart(isPresent);
+      // })
+      // .catch((err) => {
+     
+      // })
+      // .finally(() => setLoading(false));
+  }}
 >
   Buy Now
 </button>

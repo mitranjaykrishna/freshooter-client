@@ -7,12 +7,14 @@ import { Trash2, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router";
 import empty from "../assets/emptyCart.jpg";
 import ButtonPrimary from "../components/Buttons/ButtonPrimary";
+import login from "../assets/login1.png";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(false);
 const navigate = useNavigate()
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const getCartItems = () => {
     setLoading(true);
@@ -83,6 +85,7 @@ const navigate = useNavigate()
         <div className="p-5 bg-white rounded-sm">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold  text-primary">Shopping Cart</h1>
+            {cartItems?.length > 0 && (
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input
                 type="checkbox"
@@ -91,10 +94,16 @@ const navigate = useNavigate()
                 className="w-5 h-5"
               />
               Select All
-            </label>
+            </label>)}
           </div>
 
-          {loading ? (
+          {!isLoggedIn ?  <div className="text-center  text-primary text-lg font-medium">
+                   Please log in to view your cart.  <img
+                                    src={login}
+                                    alt="login"
+                                    className="w-full object-cover"
+                                  />  
+                    </div>  :loading ? (
             <p className="text-center py-10 text-gray-500">Loading...</p>
           ) : cartItems.length === 0 ? (
           
@@ -110,7 +119,7 @@ const navigate = useNavigate()
                                       className="w-full object-cover"
                                     />    </div>
           ) : (
-            cartItems.map((item) => (
+            cartItems?.map((item) => (
               <div
                 key={item.productCode}
                 className="flex flex-col sm:flex-row items-center gap-4 border-b py-4"

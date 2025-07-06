@@ -3,50 +3,24 @@ import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
 import dairydumm from "../assets/dairy-dum.png";
+import empty from "../assets/emptyOrders.webp";
 import { useNavigate } from "react-router";
+import ButtonPrimary from "../components/Buttons/ButtonPrimary";
 
 export default function Orders() {
     const navigate = useNavigate()
+  const isLoggedIn = !!localStorage.getItem("token");
+
     const [orders, setOrders] = useState([
-        {
-            orderId: "ORD123456",
-            orderDate: "28 May 2025",
-            status: "Delivered",
-            deliveryDate: "3 June",
-            returnWindow: "13 June 2025",
-            total: 1804,
-            items: [
-                {
-                    productCode: 11,
-                    productName: "OnePlus Nord Buds 2r True Wireless in Ear Earbuds with Mic, 12.4mm Drivers",
-                    imageUrl: null,
-                    quantity: 1,
-                    totalPrice: 1804,
-                },
-            ],
-        },
-        {
-            orderId: "ORD123457",
-            orderDate: "27 May 2025",
-            status: "Cancelled",
-            items: [ {
-                    productCode: 11,
-                    productName: "OnePlus Nord Buds 2r True Wireless in Ear Earbuds with Mic, 12.4mm Drivers",
-                    imageUrl: null,
-                    quantity: 1,
-                    totalPrice: 1804,
-                },],
-        },
+      
     ]);
     const [loading, setLoading] = useState(false);
-    const userID = localStorage.getItem("userID");
 
     const getOrders = async () => {
-        if (!userID) return toast.error("User not logged in.");
         setLoading(true);
         try {
-            const res = await services.post(`${StaticApi.getUserOrders}?userId=${userID}`);
-            // setOrders(res?.data?.data || []);
+            const res = await services.get(`${StaticApi.getMyOrders}`);
+            setOrders(res?.data?.data || []);
         } catch (err) {
             toast.error("Failed to fetch orders");
         } finally {
@@ -62,11 +36,28 @@ export default function Orders() {
         <div className="px-4 py-6 max-w-5xl mx-auto">
             <h1 className="text-2xl font-bold mb-6 text-primary">Your Orders</h1>
 
-            {loading ? (
-                <p className="text-center text-gray-500 py-10">Loading orders...</p>
-            ) : orders.length === 0 ? (
-                <p className="text-center text-gray-600 py-10">No orders found.</p>
-            ) : (
+            {!isLoggedIn ?  <div className="text-center  text-primary text-lg font-medium">
+                               Please log in to view your cart.  <img
+                                                src={login}
+                                                alt="login"
+                                                className="w-full object-cover"
+                                              />  
+                                </div>  :loading ? (
+                        <p className="text-center py-10 text-gray-500">Loading...</p>
+                      ) : orders.length === 0 ? (
+                      
+            
+                         <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center"> <div className="w-max gap-[20px] flex flex-col justify-center items-center">   <p className="text-centers text-primary font-semibold text-lg">
+                          No Orders Found
+                        </p> <ButtonPrimary
+                                                      label="Explore Products"
+                                                      handleOnClick={() => navigate("/")}
+                                                    /> </div> <img
+                                                  src={empty}
+                                                  alt="empty"
+                                                  className="w-full object-cover"
+                                                />    </div>
+                      ) : (
                 <div className="flex flex-col gap-6">
                   {orders.map((order) => (
     <div key={order.orderId} className="border rounded-lg p-4 bg-white shadow-sm">

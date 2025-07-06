@@ -5,7 +5,6 @@ import amex from "../assets/amex.png";
 import mastercard from "../assets/mastercard.png";
 import rupay from "../assets/rupay.png";
 import visa from "../assets/visa.png";
-import logo from "../assets/logo.png";
 import ButtonPrimary from "../components/Buttons/ButtonPrimary";
 import { StaticApi } from "../utils/StaticApi";
 import { services } from "../utils/services";
@@ -34,13 +33,7 @@ const [upiId, setUpiId] = useState("");
     default: false,
   });
 
-  const [userData, setUserData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    error: {},
-  });
+
 
 const subtotal = checkoutProducts.reduce(
   (sum, item) => sum + item.totalPrice * item.quantity,

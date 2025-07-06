@@ -18,5 +18,7 @@ export const StaticApi = {
   deleteAddress: "/user/address/deleteAddress",
   setDefaultAddress: "/user/address/setDefaultAddress",
   placeOrder: "/order/placeOrder",
+  getMyOrders: "/order/user-orders",
+  directOrder: "/order/direct-order",
 
 };
