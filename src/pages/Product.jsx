@@ -56,7 +56,7 @@ const toggleWishlist = () => {
 
   if (!isWishlisted) {
     services
-      .post(`${StaticApi.addWishlist}?userId=${userID}&productCode=${id}`)
+      .post(`${StaticApi.addWishlist}?productId=1`)
       .then(() => {
         setIsWishlisted(true);
         toast.success("Added to Wishlist");
@@ -65,7 +65,7 @@ const toggleWishlist = () => {
       .finally(() => setLoading(false));
   } else {
     services
-      .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productCode=${id}`)
+      .delete(`${StaticApi.removeFromWishlist}?productId=1`)
       .then(() => {
         setIsWishlisted(false);
         toast.info("Removed from Wishlist");
@@ -93,7 +93,7 @@ const toggleWishlist = () => {
     } else {
       // Remove from cart
       services
-        .put(`${StaticApi.removeFromCart}?userId=${userID}&productCode=${id}&quantity=${quantity}`)
+        .put(`${StaticApi.removeFromCart}?productId=1&quantity=${quantity}`)
         .then(() => {
           setIsInCart(false);
           toast.info("Removed from Cart");

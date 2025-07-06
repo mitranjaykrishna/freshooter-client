@@ -120,7 +120,7 @@ export default function Wishlist() {
             ) : wishlistItems.length === 0 ? (
               <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center"> <img
                           src={empty}
-                          alt="login"
+                          alt="empty"
                           className="w-full object-cover"
                         /> <div className="w-max gap-[20px] flex flex-col justify-center items-center"> Your wishlist is empty. <ButtonPrimary
                               label="Explore Products"

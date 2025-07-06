@@ -5,51 +5,11 @@ import { toast } from "react-toastify";
 import dairydumm from "../assets/dairy-dum.png";
 import { Trash2, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router";
+import empty from "../assets/emptyCart.jpg";
+import ButtonPrimary from "../components/Buttons/ButtonPrimary";
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState([{
-    id: 3,
-    productCode: 11,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 1,
-    productCode: 12,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 4,
-    productCode: 31,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 3,
-    productCode: 11,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 1,
-    productCode: 12,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 4,
-    productCode: 31,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }]);
+  const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(false);
 const navigate = useNavigate()
@@ -58,9 +18,9 @@ const navigate = useNavigate()
   const getCartItems = () => {
     setLoading(true);
     services
-      .post(`${StaticApi.getUserCart}?userId=${userID}`)
+      .get(`${StaticApi.getUserCart}`)
       .then((res) => {
-        const data = res?.data?.data || [];
+        const data = res?.data || [];
         setCartItems(data);
         setSelectedItems(data.map((item) => item.productCode)); // initially select all
       })
@@ -80,7 +40,7 @@ const navigate = useNavigate()
 
   const handleRemove = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromCart}?userId=${userID}&productCode=${productCode}`)
+      .delete(`${StaticApi.removeFromCart}?productId=1`)
       .then(() => {
         toast.success("Item removed");
         setCartItems((prev) => prev.filter((item) => item.productCode !== productCode));
@@ -138,9 +98,18 @@ const navigate = useNavigate()
           {loading ? (
             <p className="text-center py-10 text-gray-500">Loading...</p>
           ) : cartItems.length === 0 ? (
-            <p className="text-center py-10 text-primary font-semibold text-lg">
+          
+
+             <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center"> <div className="w-max gap-[20px] flex flex-col justify-center items-center">   <p className="text-centers text-primary font-semibold text-lg">
               Your cart is empty
-            </p>
+            </p> <ButtonPrimary
+                                          label="Explore Products"
+                                          handleOnClick={() => navigate("/")}
+                                        /> </div> <img
+                                      src={empty}
+                                      alt="empty"
+                                      className="w-full object-cover"
+                                    />    </div>
           ) : (
             cartItems.map((item) => (
               <div
