@@ -11,7 +11,7 @@ import { StaticApi } from "../utils/StaticApi";
 import { services } from "../utils/services";
 // --- Checkout Component ---
 const Checkout = () => {
-  const [selectedPayment, setSelectedPayment] = useState("card");
+  const [selectedPayment, setSelectedPayment] = useState("cod");
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
@@ -129,6 +129,20 @@ const [upiId, setUpiId] = useState("");
       });
   };
 
+  const handleDeleteAddress =(addressId)=>{
+services.delete(`${StaticApi.deleteAddress}/${addressId}`).then(() => {
+        toast.success("Address deleted successfully");
+        getAllAddress();
+      } ).catch(() => {}  )
+  }
+
+    const handleSetDefaultAddress =(addressId)=>{
+    services.post(`${StaticApi.setDefaultAddress}/${addressId}`).then(() => {
+        toast.success("Address updated successfully");
+        getAllAddress();
+      } ).catch(() => {}  )
+  }
+
   const getAllAddress = () => {
     services
       .get(`${StaticApi.getAllAddressesOfUser}`)
@@ -169,18 +183,20 @@ const [upiId, setUpiId] = useState("");
         <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
         <div className="grid gap-4">
           {(showMore ? addressList : addressList.slice(0, 2)).map((addr, index) => (
-            <AddressCard
-              key={index}
-              address={addr}
-              selected={selectedAddress === index}
-              onChange={() => setSelectedAddress(index)}
-              onEdit={(addr) => {
-                setIsEditing(true);
-                setEditIndex(index);
-                setNewAddress(addr);
-                setShowAddAddress(true);
-              }}
-            />
+           <AddressCard
+    key={index}
+    address={addr}
+    selected={selectedAddress === index}
+    onChange={() => setSelectedAddress(index)}
+    onEdit={(addr) => {
+      setIsEditing(true);
+      setEditIndex(index);
+      setNewAddress(addr);
+      setShowAddAddress(true);
+    }}
+    onDelete={()=>handleDeleteAddress(addr.addressId)}
+    onSetDefault={()=>handleSetDefaultAddress(addr.addressId)}
+  />
           ))}
 
           {addressList.length > 2 && (
@@ -215,16 +231,7 @@ const [upiId, setUpiId] = useState("");
         </div>
       </div>
 
-      {/* User Info */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          <InputField label="First Name" value={userData.firstName} onChange={(e) => handleInputChange("firstName", e.target.value)} error={userData.error.firstName} />
-          <InputField label="Last Name" value={userData.lastName} onChange={(e) => handleInputChange("lastName", e.target.value)} error={userData.error.lastName} />
-          <InputField label="Email" value={userData.email} onChange={(e) => handleInputChange("email", e.target.value)} error={userData.error.email} />
-          <InputField label="Phone" value={userData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} error={userData.error.phone} />
-        </div>
-      </div>
+     
 
       {/* Order Summary */}
       <div className="bg-white p-6 rounded-lg shadow">
@@ -310,32 +317,72 @@ const [upiId, setUpiId] = useState("");
 export default Checkout;
 
 // --- Reusable Components ---
-const AddressCard = ({ address, selected, onChange, onEdit }) => (
-  <label className="block border flex justify-between items-start rounded-lg p-4 hover:border-primary transition cursor-pointer">
-    <div className="flex items-start">
+const AddressCard = ({
+  address,
+  selected,
+  onChange,
+  onEdit,
+  onDelete,
+  onSetDefault,
+}) => (
+  <label className={`block border flex justify-between items-start rounded-lg p-4 transition cursor-pointer ${
+    selected ? "border-primary bg-green-50" : "hover:border-primary"
+  }`}>
+    <div className="flex items-start gap-3">
       <input
         type="radio"
         name="address"
         checked={selected}
         onChange={onChange}
-        className="mr-3 mt-1"
+        className="mt-1"
       />
       <div>
         <p className="font-semibold">{address.name}</p>
         <p>{address.addressLine1}</p>
         <p>{address.city}, {address.state} - {address.postalCode}</p>
         <p className="text-sm text-gray-600">{address.phone}</p>
+
+        {address.default ? (
+          <span className="text-sm font-semibold text-green-600 mt-2 inline-block">★ Default Address</span>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSetDefault(address);
+            }}
+            className="text-sm text-blue-600 hover:underline mt-2"
+          >
+            Set as Default
+          </button>
+        )}
       </div>
     </div>
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onEdit(address);
-      }}
-      className="text-gray-500 hover:text-primary transition text-sm"
-      title="Edit address"
-    >✏️</button>
+
+    <div className="flex items-end gap-2">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit(address);
+        }}
+        className="text-gray-500 hover:text-primary transition text-sm"
+        title="Edit address"
+      >
+        ✏️
+      </button>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(address);
+        }}
+        className="text-red-500 hover:text-red-700 transition text-sm"
+        title="Delete address"
+      >
+        🗑️
+      </button>
+    </div>
   </label>
 );
 
