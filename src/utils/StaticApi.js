@@ -12,4 +12,6 @@ export const StaticApi = {
   removeFromCart: "/cart/removeFromCart",
   addToCart: "/cart/addToCart",
   getUserCart: "/cart/getCartItems",
+  getAllAddressesOfUser: "/user/address/getAllAddressesOfUser",
+  createAddress: "/user/address/createAddress",
 };

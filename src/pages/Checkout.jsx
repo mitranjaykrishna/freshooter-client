@@ -1,10 +1,26 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import logo from "../assets/logo.png";
-import ButtonPrimary from '../components/Buttons/ButtonPrimary';
+import ButtonPrimary from "../components/Buttons/ButtonPrimary";
+import { StaticApi } from "../utils/StaticApi";
+import { services } from "../utils/services";
+import { toast } from "react-toastify";
 
 const Checkout = () => {
-   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState("card");
+  const [addressList, setAddressList] = useState([]);
+  const [showAddAddress, setShowAddAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "",
+    phone: "",
+    name: "",
+    default: false,
+  });
 
   const [userData, setUserData] = useState({
     firstName: "",
@@ -13,18 +29,6 @@ const Checkout = () => {
     phone: "",
     error: {},
   });
-
-  const addressList = [
-    {
-      name: "Vaishnavi",
-      line1: "House number 13, Kamla nagar",
-      city: "Mehoni",
-      state: "Madhya Pradesh",
-      pincode: "453441",
-      phone: "7971869455",
-    },
-    // Add more addresses here
-  ];
 
   const handleInputChange = (field, value) => {
     setUserData((prev) => ({ ...prev, [field]: value }));
@@ -48,8 +52,8 @@ const Checkout = () => {
     if (!validate()) return;
 
     const options = {
-      key: "rzp_test_YourTestKey", // Replace with your test key
-      amount: 138100, // ₹1381 * 100 in paise
+      key: "rzp_test_YourTestKey",
+      amount: 138100,
       currency: "INR",
       name: "Kalakaaar Store",
       description: "Order Payment",
@@ -71,6 +75,44 @@ const Checkout = () => {
     rzp.open();
   };
 
+  const handleAddAddress = () => {
+    const requiredFields = ["name", "phone", "addressLine1", "city", "state", "postalCode", "country"];
+    let isValid = true;
+    let newError = {};
+
+    requiredFields.forEach((field) => {
+      if (!newAddress[field]) {
+        newError[field] = `Enter valid ${field}`;
+        isValid = false;
+      }
+    });
+
+    if (!isValid) {
+      setNewAddress((prev) => ({ ...prev, error: newError }));
+      return;
+    }
+
+    services
+      .post(StaticApi.createAddress, newAddress)
+      .then(() => {
+        toast.success("Address added successfully");
+        setShowAddAddress(false);
+        setNewAddress({
+          addressLine1: "",
+          addressLine2: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "",
+          phone: "",
+          name: "",
+          default: false,
+        });
+        getAllAddress()
+      })
+      .catch(() => toast.error("Failed to add address"));
+  }
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -78,23 +120,56 @@ const Checkout = () => {
     document.body.appendChild(script);
   }, []);
 
+  const getAllAddress =() =>{
+ services
+    .get(`${StaticApi.getAllAddressesOfUser}`)
+    .then((res) => {
+      const data = res?.data || [];
+
+      // Filter out any address where state, city, or postalCode is an empty string
+      const filteredAddresses = data.filter(
+        (address) =>
+          address.state?.trim() !== "" &&
+          address.city?.trim() !== "" &&
+          address.postalCode?.trim() !== ""
+      );
+
+      setAddressList(filteredAddresses);
+      setSelectedAddress(null);
+    })
+    .catch(() => toast.error("Failed to fetch addresses"));
+  }
+
+
+useEffect(() => {
+ getAllAddress()
+}, []);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6 text-center">Checkout</h1>
 
       {/* Address Section */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-4">Select a delivery address</h2>
-        <div className="grid gap-4">
-          {addressList.map((addr, index) => (
-            <AddressCard
-              key={index}
-              address={addr}
-              selected={selectedAddress === index}
-              onChange={() => setSelectedAddress(index)}
-            />
-          ))}
-        </div>
+        <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
+        
+          <div className="grid gap-4">
+            {addressList.map((addr, index) => (
+              <AddressCard
+                key={index}
+                address={addr}
+                selected={selectedAddress === index}
+                onChange={() => setSelectedAddress(index)}
+              />
+            ))}
+             <div
+            onClick={() => setShowAddAddress(true)}
+            className="cursor-pointer w-max inline-flex items-center gap-2 text-primary font-semibold border p-3 rounded hover:bg-gray-50"
+          >
+            <span className="text-2xl">➕</span> Add Address
+          </div>
+          </div>
+        
       </div>
 
       {/* Payment Section */}
@@ -157,18 +232,73 @@ const Checkout = () => {
         <PriceSummary subtotal={1381} shipping={0} />
 
         <div className="mt-6">
-          <ButtonPrimary label='Use this payment method' onClick={handlePayment}></ButtonPrimary>
+          <ButtonPrimary label="Use this payment method" onClick={handlePayment} />
         </div>
       </div>
+
+      {/* Modal for Adding Address */}
+    {showAddAddress && (
+  <div className="fixed inset-0 z-50 backdrop-blur-sm  bg-opacity-40 flex items-center justify-center">
+    <div className="relative bg-white p-6 mb-[20px] pb-[20px] rounded shadow-lg w-full max-w-lg h-[64vh] overflow-hidden">
+      <button
+        onClick={() => setShowAddAddress(false)}
+        className="absolute top-2 right-4 text-gray-600 hover:text-black text-xl"
+      >
+        ✕
+      </button>
+      <h3 className="text-lg font-semibold mb-4">Add New Address</h3>
+
+      <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
+        {[
+          ["Name", "name"],
+          ["Phone", "phone"],
+          ["Address Line 1", "addressLine1"],
+          ["Address Line 2", "addressLine2"],
+          ["City", "city"],
+          ["State", "state"],
+          ["Postal Code", "postalCode"],
+          ["Country", "country"],
+        ].map(([label, key]) => (
+          <InputField
+            key={key}
+            label={label}
+            value={newAddress[key]}
+            onChange={(e) =>
+              setNewAddress((prev) => ({ ...prev, [key]: e.target.value }))
+            }
+          />
+        ))}
+
+        <label className="flex items-center gap-2 mt-2">
+          <input
+            type="checkbox"
+            checked={newAddress.default}
+            onChange={() =>
+              setNewAddress((prev) => ({ ...prev, default: !prev.default }))
+            }
+          />
+          Set as default
+        </label>
+
+        <ButtonPrimary
+          label="Save Address"
+          handleOnClick={handleAddAddress}
+        />
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
 
-
 export default Checkout;
+
+// Reusable components
 const AddressCard = ({ address, selected, onChange }) => {
   return (
-    <label className="block border rounded-lg p-4 hover:border-primary transition cursor-pointer">
+    <label className="block border flex rounded-lg p-4 hover:border-primary transition cursor-pointer">
       <input
         type="radio"
         name="address"
@@ -178,8 +308,8 @@ const AddressCard = ({ address, selected, onChange }) => {
       />
       <div>
         <p className="font-semibold">{address.name}</p>
-        <p>{address.line1}</p>
-        <p>{address.city}, {address.state} - {address.pincode}</p>
+        <p>{address.addressLine1}</p>
+        <p>{address.city}, {address.state} - {address.postalCode}</p>
         <p className="text-sm text-gray-600">{address.phone}</p>
       </div>
     </label>
@@ -237,4 +367,3 @@ const InputField = ({ label, type = "text", value, onChange, error }) => (
     {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
   </div>
 );
-
