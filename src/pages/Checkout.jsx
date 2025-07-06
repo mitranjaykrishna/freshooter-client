@@ -6,21 +6,23 @@ import { services } from "../utils/services";
 import { toast } from "react-toastify";
 
 const Checkout = () => {
-  const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState("card");
-  const [addressList, setAddressList] = useState([]);
-  const [showAddAddress, setShowAddAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "",
-    phone: "",
-    name: "",
-    default: false,
-  });
+const [showAddAddress, setShowAddAddress] = useState(false);
+const [isEditing, setIsEditing] = useState(false);
+const [editIndex, setEditIndex] = useState(null);
+const [addressList, setAddressList] = useState([]);
+const [selectedAddress, setSelectedAddress] = useState(null);
+const [newAddress, setNewAddress] = useState({
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  country: "",
+  phone: "",
+  name: "",
+  default: false,
+});
 
   const [userData, setUserData] = useState({
     firstName: "",
@@ -75,43 +77,52 @@ const Checkout = () => {
     rzp.open();
   };
 
-  const handleAddAddress = () => {
-    const requiredFields = ["name", "phone", "addressLine1", "city", "state", "postalCode", "country"];
-    let isValid = true;
-    let newError = {};
+const handleAddAddress = () => {
+  // const requiredFields = ["name", "phone", "addressLine1", "city", "state", "postalCode", "country"];
+  const requiredFields = [ "addressLine1", "city", "state", "postalCode", "country"];
+  let isValid = true;
+  let newError = {};
 
-    requiredFields.forEach((field) => {
-      if (!newAddress[field]) {
-        newError[field] = `Enter valid ${field}`;
-        isValid = false;
-      }
-    });
-
-    if (!isValid) {
-      setNewAddress((prev) => ({ ...prev, error: newError }));
-      return;
+  requiredFields.forEach((field) => {
+    if (!newAddress[field]?.trim()) {
+      newError[field] = `Enter valid ${field}`;
+      isValid = false;
     }
+  });
 
-    services
-      .post(StaticApi.createAddress, newAddress)
-      .then(() => {
-        toast.success("Address added successfully");
-        setShowAddAddress(false);
-        setNewAddress({
-          addressLine1: "",
-          addressLine2: "",
-          city: "",
-          state: "",
-          postalCode: "",
-          country: "",
-          phone: "",
-          name: "",
-          default: false,
-        });
-        getAllAddress()
-      })
-      .catch(() => toast.error("Failed to add address"));
+  if (!isValid) {
+    // setNewAddress((prev) => ({ ...prev, error: newError }));
+    return;
   }
+
+  const apiCall = editIndex !== null
+    ? services.put(`${StaticApi.updateAddress}/${newAddress.addressId}`, newAddress)
+    : services.post(StaticApi.createAddress, newAddress);
+
+  apiCall
+    .then(() => {
+      toast.success(`Address ${editIndex !== null ? "updated" : "added"} successfully`);
+      setShowAddAddress(false);
+      setIsEditing(false);
+      setEditIndex(null);
+      setNewAddress({
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "",
+        phone: "",
+        name: "",
+        default: false,
+      });
+      getAllAddress(); // Refresh address list
+    })
+    .catch(() => {
+      toast.error(`Failed to ${editIndex !== null ? "update" : "add"} address`);
+    });
+};
+
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -155,12 +166,18 @@ useEffect(() => {
         
           <div className="grid gap-4">
             {addressList.map((addr, index) => (
-              <AddressCard
-                key={index}
-                address={addr}
-                selected={selectedAddress === index}
-                onChange={() => setSelectedAddress(index)}
-              />
+               <AddressCard
+    key={index}
+    address={addr}
+    selected={selectedAddress === index}
+    onChange={() => setSelectedAddress(index)}
+    onEdit={(addr) => {
+      setIsEditing(true);
+      setEditIndex(index);
+      setNewAddress(addr); // prefill
+      setShowAddAddress(true);
+    }}
+  />
             ))}
              <div
             onClick={() => setShowAddAddress(true)}
@@ -237,16 +254,22 @@ useEffect(() => {
       </div>
 
       {/* Modal for Adding Address */}
-    {showAddAddress && (
+ {showAddAddress && (
   <div className="fixed inset-0 z-50 backdrop-blur-sm  bg-opacity-40 flex items-center justify-center">
-    <div className="relative bg-white p-6 mb-[20px] pb-[20px] rounded shadow-lg w-full max-w-lg h-[64vh] overflow-hidden">
+    <div className="relative bg-white p-6 rounded shadow-lg w-full max-w-lg h-[64vh] overflow-hidden">
       <button
-        onClick={() => setShowAddAddress(false)}
+        onClick={() => {
+          setShowAddAddress(false);
+          setIsEditing(false);
+          setEditIndex(null);
+        }}
         className="absolute top-2 right-4 text-gray-600 hover:text-black text-xl"
       >
         ✕
       </button>
-      <h3 className="text-lg font-semibold mb-4">Add New Address</h3>
+      <h3 className="text-lg font-semibold mb-4">
+        {isEditing ? "Edit Address" : "Add New Address"}
+      </h3>
 
       <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
         {[
@@ -281,13 +304,14 @@ useEffect(() => {
         </label>
 
         <ButtonPrimary
-          label="Save Address"
+          label={isEditing ? "Update Address" : "Save Address"}
           handleOnClick={handleAddAddress}
         />
       </div>
     </div>
   </div>
 )}
+
 
     </div>
   );
@@ -296,25 +320,39 @@ useEffect(() => {
 export default Checkout;
 
 // Reusable components
-const AddressCard = ({ address, selected, onChange }) => {
+const AddressCard = ({ address, selected, onChange, onEdit }) => {
   return (
-    <label className="block border flex rounded-lg p-4 hover:border-primary transition cursor-pointer">
-      <input
-        type="radio"
-        name="address"
-        checked={selected}
-        onChange={onChange}
-        className="mr-3"
-      />
-      <div>
-        <p className="font-semibold">{address.name}</p>
-        <p>{address.addressLine1}</p>
-        <p>{address.city}, {address.state} - {address.postalCode}</p>
-        <p className="text-sm text-gray-600">{address.phone}</p>
+    <label className="block border flex justify-between items-start rounded-lg p-4 hover:border-primary transition cursor-pointer">
+      <div className="flex items-start">
+        <input
+          type="radio"
+          name="address"
+          checked={selected}
+          onChange={onChange}
+          className="mr-3 mt-1"
+        />
+        <div>
+          <p className="font-semibold">{address.name}</p>
+          <p>{address.addressLine1}</p>
+          <p>{address.city}, {address.state} - {address.postalCode}</p>
+          <p className="text-sm text-gray-600">{address.phone}</p>
+        </div>
       </div>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit(address);
+        }}
+        className="text-gray-500 hover:text-primary transition text-sm"
+        title="Edit address"
+      >
+        ✏️
+      </button>
     </label>
   );
 };
+
 
 const PaymentMethodCard = ({ label, selected, onChange, children }) => {
   return (
