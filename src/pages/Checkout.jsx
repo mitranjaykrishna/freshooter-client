@@ -339,11 +339,22 @@ const AddressCard = ({ address, selected, onChange, onEdit }) => (
   </label>
 );
 
-const PaymentMethodCard = ({ label, selected, onChange, children }) => (
-  <label className="block border rounded-lg p-4 cursor-pointer hover:border-primary transition">
-    <input type="radio" name="payment" checked={selected} onChange={onChange} className="mr-3" />
-    <span className="font-medium">{label}</span>
-    {children && <div className="mt-2">{children}</div>}
+const PaymentMethodCard = ({ label, selected, onChange }) => (
+  <label
+    className={`block border rounded-lg p-4 cursor-pointer transition ${
+      selected ? "bg-green-50 border-green-400" : ""
+    }`}
+  >
+    <div className="flex items-center">
+      <input
+        type="radio"
+        name="payment"
+        checked={selected}
+        onChange={onChange}
+        className="mr-3"
+      />
+      <span className="font-medium">{label}</span>
+    </div>
   </label>
 );
 
@@ -390,10 +401,14 @@ const InputField = ({ label, type = "text", value, onChange, error }) => (
 );
 
 
-const CardPaymentOption = ({ selected, onChange ,setShowCardModal}) => {
+const CardPaymentOption = ({ selected, onChange, setShowCardModal }) => {
   return (
-    <label className="block border  rounded-lg p-4 w-full cursor-pointer transition">
-      <div className="flex items-center mb-3">
+    <label
+      className={`block border rounded-lg p-4 w-full cursor-pointer transition ${
+        selected ? "bg-green-50 border-green-400" : ""
+      }`}
+    >
+      <div className="flex items-center mb-1">
         <input
           type="radio"
           name="payment"
@@ -404,26 +419,32 @@ const CardPaymentOption = ({ selected, onChange ,setShowCardModal}) => {
         <span className="font-medium text-lg">Credit or debit card</span>
       </div>
 
-      {/* Card Logos */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {[visa, mastercard, amex,  rupay].map((img, i) => (
-          <img key={i} src={img} alt="Card" className="w-10 h-auto" />
-        ))}
-      </div>
+      {selected && (
+        <>
+          <div className="flex flex-wrap gap-2 mt-3 mb-3">
+            {[visa, mastercard, amex, rupay].map((img, i) => (
+              <img key={i} src={img} alt="Card" className="w-10 h-auto" />
+            ))}
+          </div>
 
-      {/* Saved Card */}
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-blue-600 font-medium hover:underline cursor-pointer"  onClick={() => setShowCardModal(true)}>
-          Add a new credit or debit card
-        </span>
-      </div>
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              className="text-blue-600 font-medium hover:underline cursor-pointer"
+              onClick={() => setShowCardModal(true)}
+            >
+              Add a new credit or debit card
+            </span>
+          </div>
 
-      <p className="text-sm text-gray-600 mt-1">
-        We accepts all major credit & cards
-      </p>
+          <p className="text-sm text-gray-600 mt-1">
+            We accept all major credit & debit cards
+          </p>
+        </>
+      )}
     </label>
   );
 };
+
 
 const AddCardModal = ({ onClose, onSubmit }) => {
   const [cardDetails, setCardDetails] = useState({
@@ -575,7 +596,11 @@ const AddCardModal = ({ onClose, onSubmit }) => {
 
 const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
   return (
-    <label className="block border  rounded-lg p-4">
+    <label
+      className={`block border rounded-lg p-4 transition ${
+        selected ? "bg-green-50 border-green-400" : ""
+      }`}
+    >
       <div className="flex items-center gap-3 mb-2">
         <input
           type="radio"
@@ -587,27 +612,30 @@ const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
         <span className="font-semibold text-lg">Other UPI Apps</span>
       </div>
 
-      <p className="mb-2 text-sm font-medium">Please enter your UPI ID</p>
-
-      <div className="flex items-center gap-2 mb-2">
-        <input
-          type="text"
-          placeholder="Enter UPI ID"
-          value={upiId}
-          onChange={(e) => setUpiId(e.target.value)}
-          className="border rounded px-3 py-2 w-60"
-        />
-        <button
-          onClick={onVerify}
-          className="bg-yellow-100 text-yellow-700 font-medium px-4 py-2 rounded border border-yellow-300 hover:bg-yellow-200"
-        >
-          Verify
-        </button>
-      </div>
-
-      <p className="text-sm text-gray-700">
-        The UPI ID is in the format of <span className="font-medium">name/phone number@bankname</span>
-      </p>
+      {selected && (
+        <>
+          <p className="mb-2 text-sm font-medium">Please enter your UPI ID</p>
+          <div className="flex items-center gap-2 mb-2">
+            <input
+              type="text"
+              placeholder="Enter UPI ID"
+              value={upiId}
+              onChange={(e) => setUpiId(e.target.value)}
+              className="border rounded px-3 py-2 w-60"
+            />
+            <button
+              onClick={onVerify}
+              className="bg-yellow-100 text-yellow-700 font-medium px-4 py-2 rounded border border-yellow-300 hover:bg-yellow-200"
+            >
+              Verify
+            </button>
+          </div>
+          <p className="text-sm text-gray-700">
+            The UPI ID is in the format of <span className="font-medium">name/phone@bank</span>
+          </p>
+        </>
+      )}
     </label>
   );
 };
+
