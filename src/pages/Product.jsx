@@ -23,6 +23,8 @@ export default function Product() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [isInCart, setIsInCart] = useState(false);
+  const [wishlistAnimation, setWishlistAnimation] = useState(false);
+
 
   const getProductDetails = () => {
     setLoading(true);
@@ -48,28 +50,31 @@ export default function Product() {
     }
   };
 
-  const toggleWishlist = () => {
+const toggleWishlist = () => {
+  setWishlistAnimation(true);
+  setTimeout(() => setWishlistAnimation(false), 400); // match animation duration
 
-    if (!isWishlisted) {
-      services
-        .post(`${StaticApi.addWishlist}?userId=${userID}&productCode=${id}`)
-        .then(() => {
-          setIsWishlisted(true);
-          toast.success("Added to Wishlist");
-        })
-        .catch(() => toast.error("Failed to add to wishlist"))
-        .finally(() => setLoading(false));
-    } else {
-      services
-        .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productCode=${id}`)
-        .then(() => {
-          setIsWishlisted(false);
-          toast.info("Removed from Wishlist");
-        })
-        .catch(() => toast.error("Failed to remove from wishlist"))
-        .finally(() => setLoading(false));
-    }
-  };
+  if (!isWishlisted) {
+    services
+      .post(`${StaticApi.addWishlist}?userId=${userID}&productCode=${id}`)
+      .then(() => {
+        setIsWishlisted(true);
+        toast.success("Added to Wishlist");
+      })
+      .catch(() => toast.error("Failed to add to wishlist"))
+      .finally(() => setLoading(false));
+  } else {
+    services
+      .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productCode=${id}`)
+      .then(() => {
+        setIsWishlisted(false);
+        toast.info("Removed from Wishlist");
+      })
+      .catch(() => toast.error("Failed to remove from wishlist"))
+      .finally(() => setLoading(false));
+  }
+};
+
 
   const handleCart = () => {
     
@@ -156,15 +161,23 @@ export default function Product() {
 
   // Sample images - in a real app, these would come from the API
   const productImages = [
-    "https://plus.unsplash.com/premium_photo-1664647903833-318dce8f3239?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "https://plus.unsplash.com/premium_photo-1661690495584-cba1d18e1936?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZGFpcnl8ZW58MHx8MHx8fDA%3D"
+    "https://images.unsplash.com/photo-1656497119922-068c6a5e1193?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bWFzYWxhfGVufDB8fDB8fHww",
+    "https://images.unsplash.com/photo-1633881614907-8587c9b93c2f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFzYWxhfGVufDB8fDB8fHww",
+    "https://images.unsplash.com/photo-1543376798-62217a8d85cc?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fG1hc2FsYXxlbnwwfHwwfHx8MA%3D%3D"
   ];
+const price = Number(product?.price);
+const discount = Number(product?.discount) || 0;
 
+const hasValidPrice = !isNaN(price) && price > 0;
+const hasDiscount = hasValidPrice && discount > 0 && discount <= 100;
+
+const discountedPrice = hasDiscount
+  ? price - (price * discount) / 100
+  : price;
   return (
     <div className="py-5 flex flex-col gap-5">
       <div className="relative flex flex-col md:flex-row gap-5 rounded-2xl p-5 bg-white h-[100vh]">
-        <div className="w-full md:w-2/3">
+        <div className="w-full md:w-[50%]">
           {/* Sticky container */}
           <div className="sticky top-[80px] flex gap-5">
             {/* Desktop Thumbnails (hidden on mobile) */}
@@ -172,7 +185,7 @@ export default function Product() {
               {productImages?.map((img, index) => (
                 <div
                   key={index}
-                  className={`w-[50px] h-[80px] cursor-pointer ${selectedImage === index ? 'ring-2 ring-primary' : ''}`}
+                  className={`w-[75px] h-[80px] cursor-pointer ${selectedImage === index ? 'ring-2 ring-primary' : ''}`}
                   onClick={() => setSelectedImage(index)}
                 >
                   <img
@@ -236,24 +249,35 @@ export default function Product() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-[10px] justify-between w-full">
+        <div className="flex flex-col gap-[10px] md:w-[50%] justify-between w-full">
+          <div className="flex flex-col gap-[20px]">
           <h1 className="text-2xl font-bold">{product?.name ?? "Hello"}</h1>
           <div className="flex items-center gap-2">
             <span className="text-yellow-500">⭐⭐⭐⭐⭐</span>
             <span className="text-sm text-gray-600">(100 reviews)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-primary">
-              ₹{product?.price?.toFixed(2)}
-            </span>
-            {product?.price < product?.originalPrice && (
-              <span className="line-through text-gray-500">
-                ₹{product?.originalPrice?.toFixed(2)}
-              </span>
-            )}
           </div>
+          
+ <div className="flex items-end gap-2">
+  {hasValidPrice && (
+    <span className="text-[24px] font-semibold text-primary leading-none">
+      ₹{discountedPrice.toFixed(2)}
+    </span>
+  )}
 
-          <div className="text-sm">
+  {hasDiscount && (
+    <>
+      <span className="line-through text-gray-500 text-sm leading-none">
+        ₹{price.toFixed(2)}
+      </span>
+      <span className="text-sm text-green-600 font-medium leading-none">
+        ({discount}% OFF)
+      </span>
+    </>
+  )}
+</div>
+
+ <div className="text-sm">
             <span className="font-medium">Category:</span> {product?.category}
           </div>
 
@@ -304,26 +328,37 @@ export default function Product() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
-              disabled={product?.stockQuantity <= 0}
-              onClick={()=>navigate('/checkout')}
-            >
-              Buy Now
-            </button>
-            <button
-              className="bg-quaternary text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
-              // disabled={product?.stockQuantity <= 0}
-              onClick={handleCart}
-            >
-              {isInCart ? "Remove from Cart" : "Add to Cart"}
-            </button>
+           <button
+            className={`${
+             product?.stockQuantity <= 0 ? "bg-gray-300 cursor-not-allowed" : "bg-primary hover:bg-secondary"
+            } text-white px-4 py-2 rounded-lg transition-colors h-[42px]`}
+            // disabled={product?.stockQuantity <= 0}
+            onClick={handleCart}
+          >
+          {isInCart ? "Remove from Cart" : "Add to Cart"}
+        </button>
+
+        {/* Buy Now – now looks SECONDARY */}
+<button
+  className={`px-4 py-2 rounded-lg transition-colors h-[42px] border ${
+    product?.stockQuantity <= 0
+      ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
+      : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
+  }`}
+  disabled={product?.stockQuantity <= 0}
+  onClick={() => navigate("/checkout")}
+>
+  Buy Now
+</button>
+
             <div
-              className="text-red-500 cursor-pointer text-2xl"
-              onClick={toggleWishlist}
-            >
-              {isWishlisted ? <FaHeart /> : <FaRegHeart />}
-            </div>
+  className={`text-red-500 cursor-pointer text-2xl transition-transform ${
+    wishlistAnimation ? "wishlist-bounce" : ""
+  }`}
+  onClick={toggleWishlist}
+>
+  {isWishlisted ? <FaHeart /> : <FaRegHeart />}
+</div>
           </div>
 
           <div className="flex flex-col gap-2">
