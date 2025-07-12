@@ -77,7 +77,10 @@ export default function Wishlist() {
       .catch(() => toast.error("Failed to remove from cart"));
   };
 
-  const handleBuyNow = (productCode) => {
+  const handleBuyNow = (item) => {
+      const updatedItems = [item];
+
+  localStorage.setItem("selectedCheckoutItems", JSON.stringify(updatedItems));
     navigate("/checkout");
   };
 
@@ -175,7 +178,7 @@ export default function Wishlist() {
 
                           <ButtonPrimary
                             label="Buy Now"
-                            handleOnClick={() => handleBuyNow(item.productCode)}
+                            handleOnClick={() => handleBuyNow(item)}
                           />
 
                           <button

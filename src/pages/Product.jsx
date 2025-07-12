@@ -38,6 +38,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
       .get(`${StaticApi.getProductByProductCode}/${id}`) // Use GET with URL parameter
       .then((response) => {
           setProduct(response?.data?.data);
+          
       })
       .catch((err) => {
         setError("Failed to load product. Please try again later.");
@@ -140,11 +141,22 @@ const toggleWishlist = () => {
       })
       .finally(() => setLoading(false));
   };
+const checkIfWishlisted = async () => {
+  try {
+    const res = await services.get(StaticApi.getUserWishlist);
+    const wishlist = res?.data || [];
 
-  useEffect(() => {
-    getProductDetails();
-    getUserCart()
-  }, [id]);
+    const isPresent = wishlist.some(item => item.productCode === id);
+    setIsWishlisted(isPresent);
+  } catch (err) {
+    console.error("Failed to fetch wishlist:", err);
+  }
+};
+useEffect(() => {
+  getProductDetails();
+  getUserCart();
+  checkIfWishlisted();
+}, [id]);
 
   if (loading) {
     return (
