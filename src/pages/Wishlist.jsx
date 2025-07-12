@@ -45,11 +45,10 @@ export default function Wishlist() {
   };
 
   const getUserCart = async () => {
-    if (!userID) return;
 
     try {
-      const res = await services.post(`${StaticApi.getUserCart}?userId=${userID}`);
-      const cartItems = res?.data?.data || [];
+      const res = await services.get(`${StaticApi.getUserCart}`);
+      const cartItems = res?.data || [];
       setCartproductCodes(cartItems.map((item) => item.productCode));
     } catch (err) {
       console.error("Error fetching cart:", err);
@@ -69,7 +68,7 @@ export default function Wishlist() {
 
   const handleRemoveFromCart = (productCode) => {
     services
-      .put(`${StaticApi.removeFromCart}?userId=${userID}&productCode=${productCode}&quantity=1`)
+      .delete(`${StaticApi.removeFromCart}?productCode=${productCode}&quantity=1`)
       .then(() => {
         toast.success("Removed from cart");
         setCartproductCodes((prev) => prev.filter((code) => code !== productCode));

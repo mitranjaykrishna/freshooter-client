@@ -41,7 +41,7 @@ const navigate = useNavigate()
 
   const handleRemove = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromCart}?productId=1`)
+      .delete(`${StaticApi.removeFromCart}?productCode=${productCode}`)
       .then(() => {
         toast.success("Item removed");
         setCartItems((prev) => prev.filter((item) => item.productCode !== productCode));
