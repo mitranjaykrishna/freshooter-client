@@ -256,7 +256,7 @@ useEffect(() => {
 
       {/* Address Modal */}
       {showAddAddress && (
-        <div className="fixed inset-0 z-50 backdrop-blur-sm bg-black bg-opacity-40 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 backdrop-blur-sm bg-gray-400/50 bg-opacity-40 flex items-center justify-center">
           <div className="relative bg-white p-6 rounded shadow-lg w-full max-w-lg h-[64vh] overflow-hidden">
             <button
               onClick={() => {
@@ -273,8 +273,8 @@ useEffect(() => {
 
             <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
               {[
-                ["Name", "name"],
-                ["Phone", "phone"],
+                ["Name", "userName"],
+                ["Phone", "userNumber"],
                 ["Address Line 1", "addressLine1"],
                 ["Address Line 2", "addressLine2"],
                 ["City", "city"],
@@ -348,7 +348,7 @@ const AddressCard = ({
         className="mt-1"
       />
       <div>
-        <p className="font-semibold">{address.name}</p>
+        <p className="font-semibold">{address.userName ? address.userName  : "N/A"} - {address.userNumber}</p>
         <p>{address.addressLine1}</p>
         <p>{address.city}, {address.state} - {address.postalCode}</p>
         <p className="text-sm text-gray-600">{address.phone}</p>
@@ -419,7 +419,7 @@ const PaymentMethodCard = ({ label, selected, onChange }) => (
 const OrderItem = ({ item, onQuantityChange, onRemove }) => {
 
   return (
-    <div className="flex gap-4 border rounded p-4 mb-4 shadow-sm">
+    <div className="flex gap-4 border rounded p-4 mb-4 shadow-sm max-w-[50%]">
       {/* Image */}
       <img
         src={item.imageUrl}
@@ -440,20 +440,36 @@ const OrderItem = ({ item, onQuantityChange, onRemove }) => {
 
         <div className="flex items-center gap-3 mt-4">
           {/* Quantity controls */}
-          <button
-            className="text-xl px-2 border rounded"
-            onClick={() => onQuantityChange(item, item.quantity - 1)}
+         
+
+          <div className="inline-flex items-center border border-gray-300 rounded-full overflow-hidden shadow-sm w-max">
+  <button
+    className={`px-4 py-1 text-lg font-semibold transition-all ${
+      item.quantity <= 1
+        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+        : "text-primary hover:bg-gray-200"
+    }`}
+           onClick={() => onQuantityChange(item, item.quantity - 1)}
             disabled={item.quantity <= 1}
-          >
-            −
-          </button>
-          <span className="font-medium">{item.quantity}</span>
-          <button
-            className="text-xl px-2 border rounded"
-            onClick={() => onQuantityChange(item, item.quantity + 1)}
-          >
-            +
-          </button>
+  >
+    –
+  </button>
+
+  <span className="px-5 py-1 text-base font-medium text-gray-700 bg-white select-none">
+    {item.quantity}
+  </span>
+
+  <button
+    className={`px-4 py-1 text-lg font-semibold transition-all ${
+      item.quantity >= item?.stockQuantity
+        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+        : "text-primary hover:bg-gray-200"
+    }`}
+   onClick={() => onQuantityChange(item, item.quantity + 1)}
+  >
+    +
+  </button>
+</div>
 
           {/* Delete */}
           <button
