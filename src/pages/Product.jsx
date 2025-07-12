@@ -378,7 +378,12 @@ onClick={() => {
     totalPrice: discountedPrice * quantity,
   };
 
-  localStorage.setItem("buyNowProduct", JSON.stringify(buyNowItem));
+
+  // Overwrite with the latest item as the only one (since it's a buy now flow)
+  const updatedItems = [buyNowItem];
+
+  localStorage.setItem("selectedCheckoutItems", JSON.stringify(updatedItems));
+
   navigate("/checkout");
 }}
 >

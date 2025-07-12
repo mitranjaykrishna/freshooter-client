@@ -8,8 +8,11 @@ import visa from "../assets/visa.png";
 import ButtonPrimary from "../components/Buttons/ButtonPrimary";
 import { StaticApi } from "../utils/StaticApi";
 import { services } from "../utils/services";
+import { StaticRoutes } from "../utils/StaticRoutes";
+import { useNavigate } from "react-router";
 // --- Checkout Component ---
 const Checkout = () => {
+  const navigate  = useNavigate();
   const [selectedPayment, setSelectedPayment] = useState("cod");
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -19,7 +22,7 @@ const Checkout = () => {
   const [showMore, setShowMore] = useState(false);
 const [showCardModal, setShowCardModal] = useState(false);
   const [checkoutProducts, setCheckoutProducts] = useState([]);
-
+const [wasLastItemDeleted, setWasLastItemDeleted] = useState(false);
 const [upiId, setUpiId] = useState("");
   const [newAddress, setNewAddress] = useState({
     addressLine1: "",
@@ -35,7 +38,7 @@ const [upiId, setUpiId] = useState("");
 
 
 
-const subtotal = checkoutProducts.reduce(
+const subtotal = checkoutProducts?.reduce(
   (sum, item) => sum + item.totalPrice * item.quantity,
   0
 );
@@ -153,8 +156,22 @@ services.delete(`${StaticApi.deleteAddress}/${addressId}`).then(() => {
   }
   }, []);
 
+const handleDeleteCheckoutItem = (productId) => {
+  const updatedItems = checkoutProducts.filter(
+    (item) => item.productId !== productId
+  );
+  setCheckoutProducts(updatedItems);
 
-
+  // If only one item was left before deletion, set flag to true
+  if (checkoutProducts.length === 1) {
+    setWasLastItemDeleted(true);
+  }
+};
+useEffect(() => {
+  if (checkoutProducts.length === 0 && wasLastItemDeleted) {
+    navigate(StaticRoutes.home);
+  }
+}, [checkoutProducts, wasLastItemDeleted]);
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6 text-center">Checkout</h1>
@@ -217,10 +234,20 @@ services.delete(`${StaticApi.deleteAddress}/${addressId}`).then(() => {
       {/* Order Summary */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-      {checkoutProducts.map((item, idx) => (
-  <OrderItem key={idx} name={item.productName} price={item.totalPrice * item.quantity} />
-))}
-       <PriceSummary subtotal={subtotal} shipping={0} />
+{checkoutProducts.map((item, idx) => (
+  <OrderItem
+    key={idx}
+    item={item}
+    onQuantityChange={(item, newQty) => {
+      const updated = checkoutProducts.map((i) =>
+        i.productId === item.productId ? { ...i, quantity: newQty, totalPrice: newQty * i.price } : i
+      );
+      setCheckoutProducts(updated);
+      localStorage.setItem("selectedCheckoutItems", JSON.stringify(updated));
+    }}
+   onRemove={(item) => handleDeleteCheckoutItem(item.productId)}
+  />
+))}    <PriceSummary subtotal={subtotal} shipping={0} />
         <div className="mt-6">
           <ButtonPrimary label="Use this payment method" handleOnClick={handlePayment} />
         </div>
@@ -388,12 +415,59 @@ const PaymentMethodCard = ({ label, selected, onChange }) => (
   </label>
 );
 
-const OrderItem = ({ name, price }) => (
-  <div className="flex justify-between">
-    <span>{name}</span>
-    <span>₹{price}</span>
-  </div>
-);
+const OrderItem = ({ item, onQuantityChange, onRemove }) => {
+
+  return (
+    <div className="flex gap-4 border rounded p-4 mb-4 shadow-sm">
+      {/* Image */}
+      <img
+        src={item.imageUrl}
+        alt={item.productName}
+        className="w-28 h-28 object-contain rounded"
+      />
+
+      {/* Details */}
+      <div className="flex flex-col justify-between flex-1">
+        <div>
+          <h3 className="text-lg font-semibold">{item.name}</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Size: {item.size || "N/A"}
+          </p>
+  
+          <p className="text-xl font-bold mt-2">₹{item.price}</p>
+        </div>
+
+        <div className="flex items-center gap-3 mt-4">
+          {/* Quantity controls */}
+          <button
+            className="text-xl px-2 border rounded"
+            onClick={() => onQuantityChange(item, item.quantity - 1)}
+            disabled={item.quantity <= 1}
+          >
+            −
+          </button>
+          <span className="font-medium">{item.quantity}</span>
+          <button
+            className="text-xl px-2 border rounded"
+            onClick={() => onQuantityChange(item, item.quantity + 1)}
+          >
+            +
+          </button>
+
+          {/* Delete */}
+          <button
+            onClick={() => onRemove(item)}
+            className="ml-4 text-red-600 text-xl hover:text-red-800"
+            title="Remove item"
+          >
+            🗑
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const PriceSummary = ({ subtotal, shipping }) => {
   const total = subtotal + shipping;
