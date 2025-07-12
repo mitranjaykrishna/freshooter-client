@@ -13,25 +13,25 @@ export default function Footer() {
   return (
     <footer className="bg-primary text-black text-sm mt-8 animate-fadeIn">
       {/* Top policies row */}
-      <div className="grid grid-cols-2 sm:grid-cols-6 gap-4 text-center border-b border-gray-300 py-5 px-4">
-        {[
-          { icon: "📄", label: "Terms & Conditions", link: "/terms" },
-          { icon: "👥", label: "About Us", link: "/about" },
-          { icon: "📱", label: "Contact Us", link: "/contact" },
-          { icon: "↩️", label: "Return Policy", link: "/returns" },
-          { icon: "🛟", label: "Support Policy", link: "/support" },
-          { icon: "❗", label: "Privacy Policy", link: "/privacy" },
-        ].map((item, i) => (
-          <a
-            key={i}
-            href={item.link}
-            className="flex flex-col items-center gap-1 hover:text-orange-600 transition-all duration-300 transform hover:scale-110"
-          >
-            <span className="text-orange-600 text-2xl animate-pulse">{item.icon}</span>
-            <span className="text-sm font-medium">{item.label}</span>
-          </a>
-        ))}
-      </div>
+<div className="grid grid-cols-2 sm:grid-cols-6 gap-4 text-center border-b border-gray-300 py-5 px-4">
+  {[
+    { icon: "📄", label: "Terms & Conditions", link: "/terms#terms" },
+    { icon: "👥", label: "About Us", link: "/terms#about" },
+    { icon: "📱", label: "Contact Us", link: "/terms#contact" },
+    { icon: "↩️", label: "Return Policy", link: "/terms#return" },
+    { icon: "🛟", label: "Support Policy", link: "/terms#support" },
+    { icon: "❗", label: "Privacy Policy", link: "/terms#privacy" },
+  ].map((item, i) => (
+    <a
+      key={i}
+      href={item.link}
+      className="flex flex-col items-center gap-1 hover:text-orange-600 transition-all duration-300 transform hover:scale-110"
+    >
+      <span className="text-orange-600 text-2xl animate-pulse">{item.icon}</span>
+      <span className="text-sm font-medium">{item.label}</span>
+    </a>
+  ))}
+</div>
 
       {/* Middle content */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 py-8 px-4 sm:px-8 animate-fadeUp">
