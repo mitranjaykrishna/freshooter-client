@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 // Import your posters properly
-import poster1 from "../../assets/poster-1.jpg";
-import poster2 from "../../assets/poster-2.jpg";
-import poster3 from "../../assets/poster-3.jpg";
+import poster1 from "../../assets/cms1.jpg";
+import poster2 from "../../assets/cms2.jpg";
+import poster3 from "../../assets/cms3.jpg";
 import poster4 from "../../assets/poster-4.jpg";
 
 import { Swiper, SwiperSlide } from "swiper/react";

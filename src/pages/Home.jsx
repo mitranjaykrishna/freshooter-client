@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
-import dairydumm from "../assets/dairy-dum.png";
+import dairydumm from "../assets/masala1.jpg";
 import HomeHeroCrausal from "../components/SwiperComp/HomeHeroCrausal";
 import FeatureCarousel from "../components/HomeHelper/FeatureCarousel";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -22,10 +22,11 @@ export default function Home() {
       .then((response) => {
         if (Array.isArray(response?.data)) {
           const mapped = response.data.map((item) => ({
-            id: item.categoryId,
+           ...item, id: item.categoryId,
             name: item.name,
             description: item.description,
-            image: dairydumm, // Replace with item.image if available
+            image: dairydumm, 
+            
           }));
           setProductCat(mapped);
         }
@@ -42,7 +43,7 @@ export default function Home() {
         console.log(response)
         if (Array.isArray(response?.data)) {
           const mapped = response.data.map((item) => ({
-            id: item.productCode,
+           ...item, id: item.productCode,
             name: item.name,
             price: item?.price,
             description: item.description,

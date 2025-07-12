@@ -5,62 +5,24 @@ import { toast } from "react-toastify";
 import dairydumm from "../assets/dairy-dum.png";
 import { Trash2, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router";
+import empty from "../assets/emptyCart.jpg";
+import ButtonPrimary from "../components/Buttons/ButtonPrimary";
+import login from "../assets/login1.png";
+import { StaticRoutes } from "../utils/StaticRoutes";
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState([{
-    id: 3,
-    productCode: 11,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 1,
-    productCode: 12,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 4,
-    productCode: 31,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 3,
-    productCode: 11,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 1,
-    productCode: 12,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }, {
-    id: 4,
-    productCode: 31,
-    productName: "Electric Iron",
-    imageUrl: null,
-    quantity: 1,
-    totalPrice: 780
-  }]);
+  const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(false);
 const navigate = useNavigate()
-  const userID = localStorage.getItem("userID");
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const getCartItems = () => {
     setLoading(true);
     services
-      .post(`${StaticApi.getUserCart}?userId=${userID}`)
+      .get(`${StaticApi.getUserCart}`)
       .then((res) => {
-        const data = res?.data?.data || [];
+        const data = res?.data || [];
         setCartItems(data);
         setSelectedItems(data.map((item) => item.productCode)); // initially select all
       })
@@ -68,19 +30,48 @@ const navigate = useNavigate()
       .finally(() => setLoading(false));
   };
 
-  const handleQuantityChange = (productCode, change) => {
+const handleQuantityChange = (productCode, change) => {
+  const item = cartItems.find((i) => i.productCode === productCode);
+  if (!item) return;
+
+  const newQuantity = item.quantity + change;
+
+  if (newQuantity <= 0) {
+    // Remove the item if quantity becomes 0 or less
+    services
+      .delete(`${StaticApi.removeFromCart}?productCode=${productCode}`)
+      .then(() => {
+        toast.success("Item removed");
+        getCartItems()
+      })
+      .catch(() => toast.error("Failed to remove item"));
+  } else {
+    // Update quantity locally
     setCartItems((prev) =>
       prev.map((item) =>
         item.productCode === productCode
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
+          ? { ...item, quantity: newQuantity }
           : item
       )
     );
-  };
+
+    // Call Add to Cart API with updated quantity
+    services
+      .post(
+        `${StaticApi.addToCart}?productCode=${productCode}&quantity=${newQuantity}`
+      )
+      .then(() => {
+        toast.success("Cart updated");
+      })
+      .catch(() => toast.error("Failed to update cart"));
+  }
+};
+
+
 
   const handleRemove = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromCart}?userId=${userID}&productCode=${productCode}`)
+      .delete(`${StaticApi.removeProductFromCart}?productCode=${productCode}`)
       .then(() => {
         toast.success("Item removed");
         setCartItems((prev) => prev.filter((item) => item.productCode !== productCode));
@@ -124,6 +115,7 @@ const navigate = useNavigate()
         <div className="p-5 bg-white rounded-sm">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold  text-primary">Shopping Cart</h1>
+            {cartItems?.length > 0 && (
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input
                 type="checkbox"
@@ -132,17 +124,35 @@ const navigate = useNavigate()
                 className="w-5 h-5"
               />
               Select All
-            </label>
+            </label>)}
           </div>
 
-          {loading ? (
+          {!isLoggedIn ?  <div className="text-center  text-primary text-lg font-medium">
+                   Please log in to view your cart. <div className="w-max flex self-center justify-self-center mt-4"> <ButtonPrimary
+                                                 label="Login " 
+                                                 handleOnClick={() => navigate(StaticRoutes.signin)}
+                                               /> </div>  <img
+                                    src={login}
+                                    alt="login"
+                                    className="w-full object-cover"
+                                  />  
+                    </div>  :loading ? (
             <p className="text-center py-10 text-gray-500">Loading...</p>
           ) : cartItems.length === 0 ? (
-            <p className="text-center py-10 text-primary font-semibold text-lg">
+          
+
+             <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center"> <div className="w-max gap-[20px] flex flex-col justify-center items-center">   <p className="text-centers text-primary font-semibold text-lg">
               Your cart is empty
-            </p>
+            </p> <ButtonPrimary
+                                          label="Explore Products"
+                                          handleOnClick={() => navigate("/")}
+                                        /> </div> <img
+                                      src={empty}
+                                      alt="empty"
+                                      className="w-full object-cover"
+                                    />    </div>
           ) : (
-            cartItems.map((item) => (
+            cartItems?.map((item) => (
               <div
                 key={item.productCode}
                 className="flex flex-col sm:flex-row items-center gap-4 border-b py-4"
@@ -243,7 +253,19 @@ const navigate = useNavigate()
             </div>
             <button
               className="mt-4 bg-primary hover:bg-secondary text-white py-2 rounded-md text-sm transition"
-              onClick={() => navigate("/checkout")}
+             onClick={() => {
+  const selectedProductDetails = cartItems
+    .filter((item) => selectedItems.includes(item.productCode))
+    .map((item) => ({
+      productCode: item.productCode,
+      quantity: item.quantity,
+      totalPrice: item.totalPrice,
+      productName: item.productName,
+    }));
+
+  localStorage.setItem("selectedCheckoutItems", JSON.stringify(selectedProductDetails));
+  navigate("/checkout");
+}}
               disabled={selectedItems.length === 0}
             >
               Proceed to Checkout
