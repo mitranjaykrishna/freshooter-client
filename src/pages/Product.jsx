@@ -11,6 +11,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
 import 'swiper/css/free-mode';
 import { toast } from "react-toastify";
+import LoginModal from "../components/Login/LoginModal";
 
 export default function Product() {
   const { id } = useParams(); // Get product code from URL
@@ -24,6 +25,9 @@ export default function Product() {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [isInCart, setIsInCart] = useState(false);
   const [wishlistAnimation, setWishlistAnimation] = useState(false);
+
+
+const [showLoginModal, setShowLoginModal] = useState(false);
 
 
   const getProductDetails = () => {
@@ -50,9 +54,46 @@ export default function Product() {
     }
   };
 
+const isAuthenticated = () => {
+  const token = localStorage.getItem("authToken");
+  return !!token;
+};
+
+const handleCart = () => {
+  if (!isAuthenticated()) {
+    setShowLoginModal(true);
+    return;
+  }
+
+  if (!isInCart) {
+    services
+      .post(`${StaticApi.addToCart}?productId=1&quantity=${quantity}`)
+      .then(() => {
+        setIsInCart(true);
+        toast.success("Added to Cart");
+      })
+      .catch(() => toast.error("Failed to add to cart"))
+      .finally(() => setLoading(false));
+  } else {
+    services
+      .put(`${StaticApi.removeFromCart}?productId=1&quantity=${quantity}`)
+      .then(() => {
+        setIsInCart(false);
+        toast.info("Removed from Cart");
+      })
+      .catch(() => toast.error("Failed to remove from cart"))
+      .finally(() => setLoading(false));
+  }
+};
+
 const toggleWishlist = () => {
+  if (!isAuthenticated()) {
+    setShowLoginModal(true);
+    return;
+  }
+
   setWishlistAnimation(true);
-  setTimeout(() => setWishlistAnimation(false), 400); // match animation duration
+  setTimeout(() => setWishlistAnimation(false), 400);
 
   if (!isWishlisted) {
     services
@@ -74,36 +115,6 @@ const toggleWishlist = () => {
       .finally(() => setLoading(false));
   }
 };
-
-
-  const handleCart = () => {
-    
-    if (!isInCart) {
-      // Add to cart
-      services
-        .post(`${StaticApi.addToCart}?productId=1&quantity=${quantity}`)
-        .then(() => {
-          setIsInCart(true);
-          toast.success("Added to Cart");
-        })
-        .catch(() => {
-          toast.error("Failed to add to cart");
-        })
-        .finally(() => setLoading(false));
-    } else {
-      // Remove from cart
-      services
-        .put(`${StaticApi.removeFromCart}?productId=1&quantity=${quantity}`)
-        .then(() => {
-          setIsInCart(false);
-          toast.info("Removed from Cart");
-        })
-        .catch(() => {
-          toast.error("Failed to remove from cart");
-        })
-        .finally(() => setLoading(false));
-    }
-  };
 
   const getUserCart = () => {
     setLoading(true);
@@ -174,8 +185,13 @@ const hasDiscount = hasValidPrice && discount > 0 && discount <= 100;
 const discountedPrice = hasDiscount
   ? price - (price * discount) / 100
   : price;
+
+
+
+
   return (
     <div className="py-5 flex flex-col gap-5">
+      <LoginModal open={showLoginModal} onClose={() => setShowLoginModal(false)} />
       <div className="relative flex flex-col md:flex-row gap-5 rounded-2xl p-5 bg-white h-[100vh]">
         <div className="w-full md:w-[50%]">
           {/* Sticky container */}
@@ -277,7 +293,7 @@ const discountedPrice = hasDiscount
   )}
 </div>
 
- <div className="text-sm">
+          <div className="text-sm">
             <span className="font-medium">Category:</span> {product?.category}
           </div>
 
@@ -346,34 +362,25 @@ const discountedPrice = hasDiscount
       : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
   }`}
   // disabled={product?.stockQuantity <= 0}
-  onClick={() => {
-    const buyNowItem = {
-      productId: product?.productId,
-      productCode: product?.productCode,
-      name: product?.name,
-      imageUrl: product?.imageUrl || productImages?.[0],
-      price: discountedPrice,
-      quantity,
-      totalPrice: discountedPrice * quantity,
-    };
+onClick={() => {
+  if (!isAuthenticated()) {
+    setShowLoginModal(true);
+    return;
+  }
 
-    localStorage.setItem("buyNowProduct", JSON.stringify(buyNowItem));
-    navigate("/checkout");
+  const buyNowItem = {
+    productId: product?.productId,
+    productCode: product?.productCode,
+    name: product?.name,
+    imageUrl: product?.imageUrl || productImages?.[0],
+    price: discountedPrice,
+    quantity,
+    totalPrice: discountedPrice * quantity,
+  };
 
-      // services
-      // .post(`${StaticApi.directOrder}?productCode=${product?.productCode}&quantity=${quantity}`)
-      // .then((res) => {
-      //   const cartItems = res.data?.data || [];
-
-      //   // Check if current product is in the cart
-      //   const isPresent = cartItems.some((item) => item.productCode == id);
-      //   setIsInCart(isPresent);
-      // })
-      // .catch((err) => {
-     
-      // })
-      // .finally(() => setLoading(false));
-  }}
+  localStorage.setItem("buyNowProduct", JSON.stringify(buyNowItem));
+  navigate("/checkout");
+}}
 >
   Buy Now
 </button>
