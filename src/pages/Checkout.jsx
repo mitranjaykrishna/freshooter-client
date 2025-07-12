@@ -170,6 +170,7 @@ const handleDeleteCheckoutItem = (productId) => {
 useEffect(() => {
   if (checkoutProducts.length === 0 && wasLastItemDeleted) {
     navigate(StaticRoutes.home);
+    localStorage.setItem("selectedCheckoutItems", JSON.stringify([]));
   }
 }, [checkoutProducts, wasLastItemDeleted]);
   return (
@@ -248,8 +249,8 @@ useEffect(() => {
    onRemove={(item) => handleDeleteCheckoutItem(item.productId)}
   />
 ))}    <PriceSummary subtotal={subtotal} shipping={0} />
-        <div className="mt-6">
-          <ButtonPrimary label="Use this payment method" handleOnClick={handlePayment} />
+        <div className="mt-6 w-max">
+          <ButtonPrimary label="Place Order" handleOnClick={handlePayment} />
         </div>
       </div>
 
