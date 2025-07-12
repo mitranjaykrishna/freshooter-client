@@ -8,6 +8,7 @@ import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
 import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { StaticRoutes } from "../utils/StaticRoutes";
 
 export default function Wishlist() {
   const navigate = useNavigate();
@@ -107,7 +108,10 @@ export default function Wishlist() {
       <div className="w-full h-full p-5 flex flex-col gap-6 rounded-2xl bg-white">
         {!isLoggedIn ? (
           <div className="text-center  text-primary text-lg font-medium">
-         Please log in to view your wishlist.  <img
+         Please log in to view your wishlist. <div className="w-max flex self-center justify-self-center mt-4"> <ButtonPrimary
+                              label="Login " 
+                              handleOnClick={() => navigate(StaticRoutes.signin)}
+                            /> </div>  <img
                           src={login}
                           alt="login"
                           className="w-full object-cover"

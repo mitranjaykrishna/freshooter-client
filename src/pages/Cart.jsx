@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 import empty from "../assets/emptyCart.jpg";
 import ButtonPrimary from "../components/Buttons/ButtonPrimary";
 import login from "../assets/login1.png";
+import { StaticRoutes } from "../utils/StaticRoutes";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -29,19 +30,48 @@ const navigate = useNavigate()
       .finally(() => setLoading(false));
   };
 
-  const handleQuantityChange = (productCode, change) => {
+const handleQuantityChange = (productCode, change) => {
+  const item = cartItems.find((i) => i.productCode === productCode);
+  if (!item) return;
+
+  const newQuantity = item.quantity + change;
+
+  if (newQuantity <= 0) {
+    // Remove the item if quantity becomes 0 or less
+    services
+      .delete(`${StaticApi.removeFromCart}?productCode=${productCode}`)
+      .then(() => {
+        toast.success("Item removed");
+        getCartItems()
+      })
+      .catch(() => toast.error("Failed to remove item"));
+  } else {
+    // Update quantity locally
     setCartItems((prev) =>
       prev.map((item) =>
         item.productCode === productCode
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
+          ? { ...item, quantity: newQuantity }
           : item
       )
     );
-  };
+
+    // Call Add to Cart API with updated quantity
+    services
+      .post(
+        `${StaticApi.addToCart}?productCode=${productCode}&quantity=${newQuantity}`
+      )
+      .then(() => {
+        toast.success("Cart updated");
+      })
+      .catch(() => toast.error("Failed to update cart"));
+  }
+};
+
+
 
   const handleRemove = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromCart}?productCode=${productCode}`)
+      .delete(`${StaticApi.removeProductFromCart}?productCode=${productCode}`)
       .then(() => {
         toast.success("Item removed");
         setCartItems((prev) => prev.filter((item) => item.productCode !== productCode));
@@ -98,7 +128,10 @@ const navigate = useNavigate()
           </div>
 
           {!isLoggedIn ?  <div className="text-center  text-primary text-lg font-medium">
-                   Please log in to view your cart.  <img
+                   Please log in to view your cart. <div className="w-max flex self-center justify-self-center mt-4"> <ButtonPrimary
+                                                 label="Login " 
+                                                 handleOnClick={() => navigate(StaticRoutes.signin)}
+                                               /> </div>  <img
                                     src={login}
                                     alt="login"
                                     className="w-full object-cover"
