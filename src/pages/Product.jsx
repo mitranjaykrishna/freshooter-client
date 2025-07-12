@@ -55,7 +55,7 @@ const [showLoginModal, setShowLoginModal] = useState(false);
   };
 
 const isAuthenticated = () => {
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem("token");
   return !!token;
 };
 
@@ -67,7 +67,7 @@ const handleCart = () => {
 
   if (!isInCart) {
     services
-      .post(`${StaticApi.addToCart}?productId=1&quantity=${quantity}`)
+      .post(`${StaticApi.addToCart}?productCode=${id}&quantity=${quantity}`)
       .then(() => {
         setIsInCart(true);
         toast.success("Added to Cart");
@@ -76,7 +76,7 @@ const handleCart = () => {
       .finally(() => setLoading(false));
   } else {
     services
-      .put(`${StaticApi.removeFromCart}?productId=1&quantity=${quantity}`)
+      .put(`${StaticApi.removeFromCart}?productCode=${id}&quantity=${quantity}`)
       .then(() => {
         setIsInCart(false);
         toast.info("Removed from Cart");
@@ -97,7 +97,7 @@ const toggleWishlist = () => {
 
   if (!isWishlisted) {
     services
-      .post(`${StaticApi.addWishlist}?productId=1`)
+      .post(`${StaticApi.addWishlist}?productCode=${id}`)
       .then(() => {
         setIsWishlisted(true);
         toast.success("Added to Wishlist");
@@ -106,7 +106,7 @@ const toggleWishlist = () => {
       .finally(() => setLoading(false));
   } else {
     services
-      .delete(`${StaticApi.removeFromWishlist}?productId=1`)
+      .delete(`${StaticApi.removeFromWishlist}?productCode=${id}`)
       .then(() => {
         setIsWishlisted(false);
         toast.info("Removed from Wishlist");
