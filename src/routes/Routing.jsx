@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import SignupLayout from "./layout/SignupLayout";
 import Signin from "../pages/Signin";
 import { StaticRoutes } from "../utils/StaticRoutes";
@@ -15,6 +15,7 @@ import Checkout from "../pages/Checkout";
 import Terms from "../pages/Terms";
 
 export default function Routing() {
+
   return (
     <>
       <BrowserRouter>

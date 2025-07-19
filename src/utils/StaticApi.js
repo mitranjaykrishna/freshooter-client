@@ -18,7 +18,7 @@ export const StaticApi = {
   updateAddress: "/user/address/updateAddress",
   deleteAddress: "/user/address/deleteAddress",
   setDefaultAddress: "/user/address/setDefaultAddress",
-  placeOrder: "/order/placeOrder",
+  placeOrder: "/order/place-cart-order",
   getMyOrders: "/order/user-orders",
   directOrder: "/order/direct-order",
 
