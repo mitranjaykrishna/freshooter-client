@@ -20,7 +20,8 @@ export default function Orders() {
     setLoading(true);
     try {
       const res = await services.get(`${StaticApi.getMyOrders}`);
-      setOrders(res?.data?.data || []);
+      console.log(res);
+      setOrders(res?.data || []);
     } catch (err) {
       toast.error("Failed to fetch orders");
     } finally {

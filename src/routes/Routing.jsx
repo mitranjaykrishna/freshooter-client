@@ -13,12 +13,13 @@ import Orders from "../pages/Orders";
 import Profile from "../pages/Profile";
 import Checkout from "../pages/Checkout";
 import Terms from "../pages/Terms";
+import ScrollToTop from "../components/ScrollToTop";
 
 export default function Routing() {
-
   return (
     <>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route element={<SignupLayout />}>
             <Route path={StaticRoutes?.signin} element={<Signin />} />

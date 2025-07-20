@@ -340,7 +340,7 @@ const Checkout = () => {
               {isEditing ? "Edit Address" : "Add New Address"}
             </h3>
 
-            <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
+            {/* <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
               {[
                 ["Name", "userName"],
                 ["Phone", "userNumber"],
@@ -364,9 +364,10 @@ const Checkout = () => {
                 />
               ))}
 
-              <label className="flex items-center gap-2 mt-2">
+              <label className="flex items-center gap-2 mt-2 cursor-pointer">
                 <input
                   type="checkbox"
+                  className="h-4 w-4 accent-blue-600" // adjust size & style
                   checked={newAddress.default}
                   onChange={() =>
                     setNewAddress((prev) => ({
@@ -375,9 +376,118 @@ const Checkout = () => {
                     }))
                   }
                 />
-                Set as default
+                <span className="text-sm leading-none">Set as default</span>
               </label>
 
+              <ButtonPrimary
+                label={isEditing ? "Update Address" : "Save Address"}
+                handleOnClick={handleAddAddress}
+              />
+            </div> */}
+
+            <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
+              {[
+                ["Name", "userName"],
+                ["Phone", "userNumber"],
+                ["Address Line 1", "addressLine1"],
+                ["Address Line 2", "addressLine2"],
+                ["Postal Code", "postalCode"],
+              ].map(([label, key]) => (
+                <InputField
+                  key={key}
+                  label={label}
+                  value={newAddress[key]}
+                  onChange={(e) =>
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }))
+                  }
+                />
+              ))}
+
+              {/* Dropdown for City */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  City
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  value={newAddress.city}
+                  onChange={(e) =>
+                    setNewAddress((prev) => ({ ...prev, city: e.target.value }))
+                  }
+                >
+                  <option value="">Select City</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Bengaluru">Bengaluru</option>
+                  <option value="Indore">Indore</option>
+                </select>
+              </div>
+
+              {/* Dropdown for State */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  value={newAddress.state}
+                  onChange={(e) =>
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      state: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select State</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Delhi">Delhi</option>
+                </select>
+              </div>
+
+              {/* Dropdown for Country */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Country
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  value={newAddress.country}
+                  onChange={(e) =>
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      country: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select Country</option>
+                  <option value="India">India</option>
+                  <option value="USA">USA</option>
+                  <option value="Canada">Canada</option>
+                </select>
+              </div>
+
+              {/* Default address checkbox */}
+              <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-blue-600"
+                  checked={newAddress.default}
+                  onChange={() =>
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      default: !prev.default,
+                    }))
+                  }
+                />
+                <span className="text-sm leading-none">Set as default</span>
+              </label>
+
+              {/* Save/Update Button */}
               <ButtonPrimary
                 label={isEditing ? "Update Address" : "Save Address"}
                 handleOnClick={handleAddAddress}
