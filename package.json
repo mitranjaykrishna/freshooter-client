@@ -20,6 +20,7 @@
     "chart.js": "^4.4.8",
     "env-cmd": "^10.1.0",
     "formik": "^2.4.6",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.487.0",
     "postcss": "^8.5.3",
     "react": "^19.0.0",

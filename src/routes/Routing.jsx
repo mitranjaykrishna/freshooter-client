@@ -14,6 +14,7 @@ import Profile from "../pages/Profile";
 import Checkout from "../pages/Checkout";
 import Terms from "../pages/Terms";
 import ScrollToTop from "../components/ScrollToTop";
+import ThankYouPage from "../pages/Thankyou";
 
 export default function Routing() {
   return (
@@ -34,6 +35,7 @@ export default function Routing() {
             <Route path={StaticRoutes?.profile} element={<Profile />} />
             <Route path={StaticRoutes?.checkout} element={<Checkout />} />
             <Route path={StaticRoutes?.terms} element={<Terms />} />
+            <Route path={StaticRoutes?.thankYou} element={<ThankYouPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

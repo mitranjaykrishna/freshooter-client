@@ -52,9 +52,10 @@ const Checkout = () => {
         // paymentMethod: selectedPayment,
         selectProductCodes: checkoutProducts.map((p) => p.productCode), // send selected products here
       })
-      .then(() => {
+      .then((res) => {
         toast.success("Order placed successfully");
         localStorage.removeItem("selectedCheckoutItems"); // Clear after placing order
+        navigate(StaticRoutes.thankYou); // Redirect to thank-you page
         // Optionally redirect to thank-you page
       })
       .catch(() => {

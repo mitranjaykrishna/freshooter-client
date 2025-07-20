@@ -11,5 +11,6 @@ export const StaticRoutes = {
   checkout: "/checkout",
   product: "/product/:id",
   terms: "/terms",
+  thankYou: "/thankYou",
   notFound: "/not-found",
 };
