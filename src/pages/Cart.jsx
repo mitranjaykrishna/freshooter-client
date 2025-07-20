@@ -66,7 +66,8 @@ export default function Cart() {
       services
         .post(`${StaticApi.addToCart}?productCode=${productCode}&quantity=1`)
         .then(() => {
-          toast.success("1 item added");
+          toast.success("Item added");
+          getCartItems();
         })
         .catch(() => toast.error("Failed to update cart"));
     }
@@ -76,6 +77,7 @@ export default function Cart() {
       .delete(`${StaticApi.removeProductFromCart}?productCode=${productCode}`)
       .then(() => {
         toast.success("Item removed");
+        getCartItems();
         setCartItems((prev) =>
           prev.filter((item) => item.productCode !== productCode)
         );
@@ -177,9 +179,6 @@ export default function Cart() {
               <div
                 key={item.productCode}
                 className="flex flex-col sm:flex-row items-center gap-4 border-b py-4"
-                // onClick={() => {
-                //   navigate(`/product/${item.productCode}`);
-                // }}
               >
                 <div className="relative w-full flex-shrink-0 sm:hidden">
                   <input
@@ -289,9 +288,9 @@ export default function Cart() {
                       Delete
                     </button>
 
-                    <span>|</span>
+                    {/* <span>|</span> */}
 
-                    <button
+                    {/* <button
                       onClick={(e) => {
                         e.stopPropagation();
                         // Add your "Save for later" logic here
@@ -299,7 +298,7 @@ export default function Cart() {
                       className="hover:underline"
                     >
                       Save for later
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>

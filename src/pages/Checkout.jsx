@@ -91,10 +91,15 @@ const Checkout = () => {
         : services.post(StaticApi.createAddress, newAddress);
 
     apiCall
-      .then(() => {
+      .then((response) => {
         toast.success(
           `Address ${editIndex !== null ? "updated" : "added"} successfully`
         );
+        // Store the new address ID if it's a new address
+        if (editIndex === null && response.data?.addressId) {
+          localStorage.setItem("recentlyAddedAddress", response.data.addressId);
+        }
+
         setShowAddAddress(false);
         setIsEditing(false);
         setEditIndex(null);
@@ -150,18 +155,36 @@ const Checkout = () => {
             address.postalCode?.trim() !== ""
         );
 
-        setAddressList(filteredAddresses);
+        // Sort with default address first
+        const sortedAddresses = [...filteredAddresses].sort(
+          (a, b) => b.default - a.default
+        );
 
-        const defaultIndex = filteredAddresses.findIndex(
-          (addr) => addr.default
-        );
-        setSelectedAddress(
-          defaultIndex !== -1
-            ? defaultIndex
-            : filteredAddresses.length > 0
-            ? 0
-            : null
-        );
+        setAddressList(sortedAddresses);
+
+        // Check for recently added address in localStorage
+        const recentlyAddedId = localStorage.getItem("recentlyAddedAddress");
+        if (recentlyAddedId) {
+          const recentlyAddedIndex = sortedAddresses.findIndex(
+            (addr) => addr.addressId == recentlyAddedId
+          );
+          if (recentlyAddedIndex !== -1) {
+            setSelectedAddress(recentlyAddedIndex);
+            localStorage.removeItem("recentlyAddedAddress"); // Clean up after use
+          } else {
+            // Fallback to default selection if recently added address not found
+            const defaultIndex = sortedAddresses.findIndex(
+              (addr) => addr.default
+            );
+            setSelectedAddress(defaultIndex !== -1 ? defaultIndex : 0);
+          }
+        } else {
+          // Normal selection when no recently added address
+          const defaultIndex = sortedAddresses.findIndex(
+            (addr) => addr.default
+          );
+          setSelectedAddress(defaultIndex !== -1 ? defaultIndex : 0);
+        }
       })
       .catch(() => toast.error("Failed to fetch addresses"));
   };
@@ -198,6 +221,7 @@ const Checkout = () => {
       localStorage.setItem("selectedCheckoutItems", JSON.stringify([]));
     }
   }, [checkoutProducts, wasLastItemDeleted]);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6 text-center">Checkout</h1>
@@ -206,10 +230,10 @@ const Checkout = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
         <div className="grid gap-4">
-          {(showMore ? addressList : addressList.slice(0, 2)).map(
+          {(showMore ? addressList : addressList.slice(0, 1)).map(
             (addr, index) => (
               <AddressCard
-                key={index}
+                key={addr.addressId} // Use addressId as key instead of index
                 address={addr}
                 selected={selectedAddress === index}
                 onChange={() => setSelectedAddress(index)}
@@ -570,7 +594,7 @@ const AddressCard = ({
           e.stopPropagation();
           onEdit(address);
         }}
-        className="text-gray-500 hover:text-primary transition text-sm"
+        className="text-gray-500 hover:text-primary transition text-sm cursor-pointer"
         title="Edit address"
       >
         ✏️
@@ -581,7 +605,7 @@ const AddressCard = ({
           e.stopPropagation();
           onDelete(address);
         }}
-        className="text-red-500 hover:text-red-700 transition text-sm"
+        className="text-red-500 hover:text-red-700 transition text-sm cursor-pointer"
         title="Delete address"
       >
         🗑️
@@ -732,7 +756,9 @@ const CardPaymentOption = ({ selected, onChange, setShowCardModal }) => {
           readOnly
           disabled
         />
-        <span className="font-medium text-lg">Credit or debit card</span>
+        <span className="font-medium text-lg text-gray-400">
+          Credit or debit card
+        </span>
       </div>
 
       {selected && (
@@ -934,7 +960,9 @@ const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
           readOnly
           disabled
         />
-        <span className="font-semibold text-lg">Other UPI Apps</span>
+        <span className="font-semibold text-lg text-gray-400">
+          Other UPI Apps
+        </span>
       </div>
 
       {selected && (
