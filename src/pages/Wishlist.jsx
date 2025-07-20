@@ -81,9 +81,7 @@ export default function Wishlist() {
 
   const handleRemoveFromCart = (productCode) => {
     services
-      .delete(
-        `${StaticApi.removeFromCart}?productCode=${productCode}&quantity=1`
-      )
+      .delete(`${StaticApi.removeProductFromCart}?productCode=${productCode}`)
       .then(() => {
         toast.success("Removed from cart");
         setCartproductCodes((prev) =>

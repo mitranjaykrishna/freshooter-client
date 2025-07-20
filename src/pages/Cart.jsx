@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
@@ -100,13 +100,13 @@ export default function Cart() {
     }
   };
 
-  const totalAmount = cartItems.reduce(
-    (sum, item) =>
-      selectedItems.includes(item.productCode)
-        ? sum + item.totalPrice * item.quantity
-        : sum,
-    0
-  );
+  const totalAmount = useMemo(() => {
+    return cartItems.reduce(
+      (sum, item) =>
+        selectedItems.includes(item.productCode) ? sum + item.totalPrice : sum,
+      0
+    );
+  }, [cartItems]);
   const removeSingleItemFromCart = (productCode, quantity = 1) => {
     services
       .delete(
@@ -282,7 +282,7 @@ export default function Cart() {
             <div className="flex justify-between text-sm font-medium">
               <span>Total Price:</span>
               <span className="text-primary font-semibold">
-                ₹{totalAmount.toFixed(2)}
+                ₹{totalAmount?.toFixed(2)}
               </span>
             </div>
             <button
