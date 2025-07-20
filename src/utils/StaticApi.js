@@ -22,5 +22,6 @@ export const StaticApi = {
   placeOrder: "/order/place-cart-order",
   getMyOrders: "/order/user-orders",
   directOrder: "/order/direct-order",
+  cancelOrder: "/order/cancelOrder",
 
 };
