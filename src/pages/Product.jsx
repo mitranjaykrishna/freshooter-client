@@ -57,7 +57,7 @@ export default function Product() {
     return !!token;
   };
 
-  const handleCart = () => {
+  const handleCart = (goToCheckout) => {
     if (!isAuthenticated()) {
       setShowLoginModal(true);
       return;
@@ -69,8 +69,17 @@ export default function Product() {
         .then(() => {
           setIsInCart(true);
           toast.success("Added to Cart");
+          if (goToCheckout) {
+            // Only navigate if handleCart was successful
+            navigate("/checkout");
+          }
         })
-        .catch(() => toast.error("Failed to add to cart"))
+        .catch(() => {
+          if (goToCheckout) toast.error("Something went wrong");
+          else {
+            toast.error("Failed to add to cart");
+          }
+        })
         .finally(() => setLoading(false));
     } else {
       services
@@ -196,6 +205,35 @@ export default function Product() {
   const discountedPrice = hasDiscount
     ? price - (price * discount) / 100
     : price;
+
+  const buyNow = async () => {
+    if (!isAuthenticated()) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const buyNowItem = {
+      productId: product?.productId,
+      productCode: product?.productCode,
+      name: product?.name,
+      imageUrl: product?.imageUrl || productImages?.[0],
+      price: discountedPrice,
+      quantity,
+      totalPrice: discountedPrice * quantity,
+    };
+
+    const updatedItems = [buyNowItem];
+
+    localStorage.setItem("selectedCheckoutItems", JSON.stringify(updatedItems));
+
+    try {
+      // Wait for cart update to complete
+      await handleCart(true);
+    } catch (error) {
+      // Optional: Show error message
+      console.error("Error adding to cart:", error);
+    }
+  };
 
   return (
     <div className="py-5 flex flex-col gap-5">
@@ -383,33 +421,7 @@ export default function Product() {
                   : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
               }`}
               // disabled={product?.stockQuantity <= 0}
-              onClick={() => {
-                if (!isAuthenticated()) {
-                  setShowLoginModal(true);
-                  return;
-                }
-
-                const buyNowItem = {
-                  productId: product?.productId,
-                  productCode: product?.productCode,
-                  name: product?.name,
-                  imageUrl: product?.imageUrl || productImages?.[0],
-                  price: discountedPrice,
-                  quantity,
-                  totalPrice: discountedPrice * quantity,
-                };
-
-                // Overwrite with the latest item as the only one (since it's a buy now flow)
-                const updatedItems = [buyNowItem];
-
-                localStorage.setItem(
-                  "selectedCheckoutItems",
-                  JSON.stringify(updatedItems)
-                );
-                handleCart();
-
-                navigate("/checkout");
-              }}
+              onClick={buyNow}
             >
               Buy Now
             </button>
