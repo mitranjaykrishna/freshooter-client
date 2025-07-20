@@ -41,29 +41,30 @@ export default function Header() {
   };
 
   // Debounced search logic
- useEffect(() => {
-  const delayDebounce = setTimeout(() => {
-    if (searchTerm.trim() !== "") {
-      services
-        .get(`${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`)
-        .then((response) => {
-          setSearchResults([...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data]);
-        })
-        .catch((err) => {
-          setSearchResults([]);
-        });
-    } else {
-      setSearchResults([]);
-    }
-  }, 500);
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim() !== "") {
+        services
+          .get(
+            `${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`
+          )
+          .then((response) => {
+            setSearchResults(response?.data || []);
+          })
+          .catch((err) => {
+            setSearchResults([]);
+          });
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
 
-  return () => clearTimeout(delayDebounce);
-}, [searchTerm]);
-
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
 
   const handleLogout = () => {
-    localStorage.clear()
-    navigate('/signin');
+    localStorage.clear();
+    navigate("/signin");
   };
 
   useEffect(() => {
@@ -71,7 +72,10 @@ export default function Header() {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchResults([]);
       }
-      if (isProfileRef.current && !isProfileRef.current.contains(event.target)) {
+      if (
+        isProfileRef.current &&
+        !isProfileRef.current.contains(event.target)
+      ) {
         setIsProfileMenuOpen(false);
       }
     };
@@ -112,21 +116,35 @@ export default function Header() {
                 className="w-full px-3 py-1 rounded-md text-black border border-transparent ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
               />
 
-
-              {searchResults.length > 0 && (
-                <div ref={searchRef} className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mt-[3px]">
-                  {searchResults?.map((product) => (
-                    <div
-                      key={product.productCode}
-                      className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
-                      onClick={() => handleResultClick(product.productCode)}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-gray-600">₹{product.price}</p>
+              {searchTerm && (
+                <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
+                  {searchResults.length > 0 ? (
+                    searchResults.map((product) => (
+                      <div
+                        key={product.productCode}
+                        className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
+                        onClick={() => handleResultClick(product.productCode)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.image || logo}
+                            alt={product.name}
+                            className="w-10 h-10 object-cover rounded"
+                          />
+                          <div>
+                            <p className="font-medium">{product.name}</p>
+                            <p className="text-sm text-gray-600">
+                              ₹{product.price}
+                            </p>
+                          </div>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      No results found
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -147,11 +165,17 @@ export default function Header() {
 
             {/* Profile */}
             <div className="relative">
-              <button className="text-white text-2xl hover:text-secondary" onClick={handleProfileToggle}>
+              <button
+                className="text-white text-2xl hover:text-secondary"
+                onClick={handleProfileToggle}
+              >
                 <AiOutlineUser />
               </button>
               {isProfileMenuOpen && (
-                <div ref={isProfileRef} className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50">
+                <div
+                  ref={isProfileRef}
+                  className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50"
+                >
                   <button
                     className="w-full text-left px-4 py-2 hover:bg-gray-100"
                     onClick={() => handleProfileNavigate(StaticRoutes.profile)}
@@ -231,7 +255,7 @@ export default function Header() {
             onClick={() => {
               navigate("/signin");
               setIsMobileMenuOpen(false);
-              localStorage.clear()
+              localStorage.clear();
             }}
             className="hover:underline text-sm block"
           >
