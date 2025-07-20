@@ -36,16 +36,24 @@ export default function Cart() {
 
     const newQuantity = item.quantity + change;
 
-    if (newQuantity <= 0) {
-      // Remove the item if quantity becomes 0 or less
-      services
-        .delete(`${StaticApi.removeFromCart}?productCode=${productCode}`)
-        .then(() => {
-          toast.success("Item removed");
-          getCartItems();
-        })
-        .catch(() => toast.error("Failed to remove item"));
-    } else {
+    if (change === -1) {
+      if (newQuantity <= 0) {
+        removeSingleItemFromCart(productCode, 1); // remove 1 unit
+      } else {
+        // Update quantity locally
+        setCartItems((prev) =>
+          prev.map((item) =>
+            item.productCode === productCode
+              ? { ...item, quantity: newQuantity }
+              : item
+          )
+        );
+
+        removeSingleItemFromCart(productCode, 1);
+      }
+    }
+
+    if (change === 1) {
       // Update quantity locally
       setCartItems((prev) =>
         prev.map((item) =>
@@ -55,18 +63,14 @@ export default function Cart() {
         )
       );
 
-      // Call Add to Cart API with updated quantity
       services
-        .post(
-          `${StaticApi.addToCart}?productCode=${productCode}&quantity=${newQuantity}`
-        )
+        .post(`${StaticApi.addToCart}?productCode=${productCode}&quantity=1`)
         .then(() => {
-          toast.success("Cart updated");
+          toast.success("1 item added");
         })
         .catch(() => toast.error("Failed to update cart"));
     }
   };
-
   const handleRemove = (productCode) => {
     services
       .delete(`${StaticApi.removeProductFromCart}?productCode=${productCode}`)
@@ -103,6 +107,17 @@ export default function Cart() {
         : sum,
     0
   );
+  const removeSingleItemFromCart = (productCode, quantity = 1) => {
+    services
+      .post(
+        `${StaticApi.removeSingleItemCart}?productCode=${productCode}&quantity=${quantity}`
+      )
+      .then(() => {
+        toast.success("1 item removed");
+        getCartItems();
+      })
+      .catch(() => toast.error("Failed to remove item"));
+  };
 
   useEffect(() => {
     getCartItems();

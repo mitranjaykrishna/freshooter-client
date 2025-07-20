@@ -1,4 +1,3 @@
-
 export default function ButtonPrimary({
   label,
   loading,
@@ -8,7 +7,7 @@ export default function ButtonPrimary({
   return (
     <button
       type={type}
-      className="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition disabled:opacity-50 cursor-pointer hover:bg-secondary"
+      className="w-full px-4 py-2 whitespace-nowrap bg-primary text-white rounded-md hover:bg-opacity-90 transition disabled:opacity-50 cursor-pointer hover:bg-secondary"
       disabled={loading}
       onClick={handleOnClick}
     >
