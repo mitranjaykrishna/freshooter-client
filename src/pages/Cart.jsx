@@ -177,36 +177,58 @@ export default function Cart() {
               <div
                 key={item.productCode}
                 className="flex flex-col sm:flex-row items-center gap-4 border-b py-4"
+                // onClick={() => {
+                //   navigate(`/product/${item.productCode}`);
+                // }}
               >
                 <div className="relative w-full flex-shrink-0 sm:hidden">
                   <input
                     type="checkbox"
-                    className="absolute top-1 left-1 w-4 h-4"
+                    className="absolute top-1 left-1 w-4 h-4 cursor-pointer"
                     checked={selectedItems.includes(item.productCode)}
-                    onChange={() => toggleItemSelect(item.productCode)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleItemSelect(item.productCode);
+                    }}
                   />
                   <img
                     src={item.imageUrl || dairydumm}
                     alt={item.productName}
                     className="w-full h-full object-cover rounded-md"
+                    onClick={() => {
+                      navigate(`/product/${item.productCode}`);
+                    }}
                   />
                 </div>
+
                 <div className="hidden sm:flex items-center gap-3">
                   <input
                     type="checkbox"
-                    className="h-5 w-5"
+                    className="h-5 w-5 cursor-pointer"
                     checked={selectedItems.includes(item.productCode)}
-                    onChange={() => toggleItemSelect(item.productCode)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleItemSelect(item.productCode);
+                    }}
                   />
                   <div className="w-[100px] h-[100px] flex-shrink-0">
                     <img
                       src={item.imageUrl || dairydumm}
                       alt={item.productName}
                       className="w-full h-full object-cover rounded-md"
+                      onClick={() => {
+                        navigate(`/product/${item.productCode}`);
+                      }}
                     />
                   </div>
                 </div>
-                <div className="flex-1 w-full">
+
+                <div
+                  className="flex-1 w-full"
+                  onClick={() => {
+                    navigate(`/product/${item.productCode}`);
+                  }}
+                >
                   <div className="flex justify-between items-start">
                     <div>
                       <h2 className="text-lg font-semibold">
@@ -229,9 +251,10 @@ export default function Cart() {
                   <div className="flex items-center gap-3 mt-2 text-sm text-gray-600 flex-wrap">
                     <div className="flex items-center gap-2 bg-quaternary px-2 py-1 rounded-md">
                       <button
-                        onClick={() =>
-                          handleQuantityChange(item.productCode, -1)
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuantityChange(item.productCode, -1);
+                        }}
                         disabled={item.quantity === 1}
                         className={`p-1 rounded-md ${
                           item.quantity === 1
@@ -243,9 +266,10 @@ export default function Cart() {
                       </button>
                       <span className="font-semibold">{item.quantity}</span>
                       <button
-                        onClick={() =>
-                          handleQuantityChange(item.productCode, 1)
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuantityChange(item.productCode, 1);
+                        }}
                         className="p-1 rounded-md hover:bg-gray-300"
                       >
                         <Plus className="w-4 h-4" />
@@ -253,15 +277,29 @@ export default function Cart() {
                     </div>
 
                     <span>|</span>
+
                     <button
                       className="text-red-500 flex items-center gap-1 hover:underline"
-                      onClick={() => handleRemove(item.productCode)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemove(item.productCode);
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete
                     </button>
+
                     <span>|</span>
-                    <button className="hover:underline">Save for later</button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Add your "Save for later" logic here
+                      }}
+                      className="hover:underline"
+                    >
+                      Save for later
+                    </button>
                   </div>
                 </div>
               </div>

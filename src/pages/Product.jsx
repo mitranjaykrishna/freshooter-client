@@ -57,7 +57,7 @@ export default function Product() {
     return !!token;
   };
 
-  const handleCart = (goToCheckout) => {
+  const handleCart = (goToCheckout = false) => {
     if (!isAuthenticated()) {
       setShowLoginModal(true);
       return;
@@ -70,7 +70,6 @@ export default function Product() {
           setIsInCart(true);
           toast.success("Added to Cart");
           if (goToCheckout) {
-            // Only navigate if handleCart was successful
             navigate("/checkout");
           }
         })
@@ -228,7 +227,7 @@ export default function Product() {
 
     try {
       // Wait for cart update to complete
-      await handleCart(true);
+      handleCart(true);
     } catch (error) {
       // Optional: Show error message
       console.error("Error adding to cart:", error);
@@ -408,7 +407,7 @@ export default function Product() {
                   : "bg-primary hover:bg-secondary"
               } text-white px-4 py-2 rounded-lg transition-colors h-[42px]`}
               // disabled={product?.stockQuantity <= 0}
-              onClick={handleCart}
+              onClick={() => handleCart(false)}
             >
               {isInCart ? "Remove from Cart" : "Add to Cart"}
             </button>

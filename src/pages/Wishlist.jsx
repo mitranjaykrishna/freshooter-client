@@ -173,7 +173,12 @@ export default function Wishlist() {
                       className="flex flex-col sm:flex-row items-stretch border border-quaternary rounded-lg overflow-hidden"
                     >
                       {/* Image */}
-                      <div className="sm:w-[160px] bg-quaternary flex-shrink-0">
+                      <div
+                        className="sm:w-[160px] bg-quaternary flex-shrink-0"
+                        onClick={() => {
+                          navigate(`/product/${item.productCode}`);
+                        }}
+                      >
                         <img
                           src={item.imageUrl || dairydumm}
                           alt={item.name}
@@ -183,7 +188,11 @@ export default function Wishlist() {
 
                       {/* Details */}
                       <div className="flex flex-col justify-between p-4 gap-3 flex-1">
-                        <div>
+                        <div
+                          onClick={() => {
+                            navigate(`/product/${item.productCode}`);
+                          }}
+                        >
                           <h3 className="text-primary font-semibold text-base sm:text-lg">
                             {item.name}
                           </h3>
