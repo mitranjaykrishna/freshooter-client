@@ -37,7 +37,7 @@ const Checkout = () => {
   });
 
   const subtotal = checkoutProducts?.reduce(
-    (sum, item) => sum + item.totalPrice * item.quantity,
+    (sum, item) => sum + item.totalPrice,
     0
   );
   const handlePayment = () => {
@@ -519,7 +519,9 @@ const OrderItem = ({ item, onQuantityChange, onRemove }) => {
             Size: {item.size || "N/A"}
           </p>
 
-          <p className="text-xl font-bold mt-2">₹{item.price}</p>
+          <p className="text-xl font-bold mt-2">
+            ₹{item.price || item.totalPrice}
+          </p>
         </div>
 
         <div className="flex items-center gap-3 mt-4">
@@ -615,8 +617,10 @@ const CardPaymentOption = ({ selected, onChange, setShowCardModal }) => {
           type="radio"
           name="payment"
           checked={selected}
-          onChange={onChange}
+          // onChange={onChange}
           className="mr-2"
+          readOnly
+          disabled
         />
         <span className="font-medium text-lg">Credit or debit card</span>
       </div>
@@ -815,8 +819,10 @@ const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
           type="radio"
           name="payment"
           checked={selected}
-          onChange={onChange}
+          // onChange={onChange}
           className="accent-primary"
+          readOnly
+          disabled
         />
         <span className="font-semibold text-lg">Other UPI Apps</span>
       </div>
