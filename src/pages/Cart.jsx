@@ -109,7 +109,7 @@ export default function Cart() {
   );
   const removeSingleItemFromCart = (productCode, quantity = 1) => {
     services
-      .post(
+      .delete(
         `${StaticApi.removeSingleItemCart}?productCode=${productCode}&quantity=${quantity}`
       )
       .then(() => {
@@ -288,14 +288,9 @@ export default function Cart() {
             <button
               className="mt-4 bg-primary hover:bg-secondary text-white py-2 rounded-md text-sm transition"
               onClick={() => {
-                const selectedProductDetails = cartItems
-                  .filter((item) => selectedItems.includes(item.productCode))
-                  .map((item) => ({
-                    productCode: item.productCode,
-                    quantity: item.quantity,
-                    totalPrice: item.totalPrice,
-                    productName: item.productName,
-                  }));
+                const selectedProductDetails = cartItems.filter((item) =>
+                  selectedItems.includes(item.productCode)
+                );
 
                 localStorage.setItem(
                   "selectedCheckoutItems",

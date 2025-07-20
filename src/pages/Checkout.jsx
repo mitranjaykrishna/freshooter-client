@@ -275,16 +275,42 @@ const Checkout = () => {
             key={idx}
             item={item}
             onQuantityChange={(item, newQty) => {
+              if (newQty < 1) return;
+
+              // Update frontend immediately
               const updated = checkoutProducts.map((i) =>
-                i.productId === item.productId
-                  ? { ...i, quantity: newQty, totalPrice: newQty * i.price }
-                  : i
+                i.productId === item.productId ? { ...i, quantity: newQty } : i
               );
               setCheckoutProducts(updated);
               localStorage.setItem(
                 "selectedCheckoutItems",
                 JSON.stringify(updated)
               );
+
+              // Determine quantity change (+1 or -1)
+              const change = newQty - item.quantity;
+
+              if (change > 0) {
+                // Add quantity
+                services
+                  .post(
+                    `${StaticApi.addToCart}?productCode=${item.productCode}&quantity=${change}`
+                  )
+                  .then(() => toast.success(`${change} item(s) added to cart`))
+                  .catch(() => toast.error("Failed to update cart"));
+              } else {
+                // Remove quantity
+                services
+                  .delete(
+                    `${StaticApi.removeSingleItemCart}?productCode=${
+                      item.productCode
+                    }&quantity=${-change}`
+                  )
+                  .then(() =>
+                    toast.success(`${-change} item(s) removed from cart`)
+                  )
+                  .catch(() => toast.error("Failed to update cart"));
+              }
             }}
             onRemove={(item) => handleDeleteCheckoutItem(item.productId)}
           />
@@ -486,7 +512,9 @@ const OrderItem = ({ item, onQuantityChange, onRemove }) => {
       {/* Details */}
       <div className="flex flex-col justify-between flex-1">
         <div>
-          <h3 className="text-lg font-semibold">{item.name}</h3>
+          <h3 className="text-lg font-semibold">
+            {item.name || item?.productName}
+          </h3>
           <p className="text-sm text-gray-600 mt-1">
             Size: {item.size || "N/A"}
           </p>
