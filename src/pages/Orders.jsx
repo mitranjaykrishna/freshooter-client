@@ -276,6 +276,24 @@ export default function Orders() {
                     <button className="bg-[#ff9933] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300">
                       Get product support
                     </button>
+                    <div className="flex flex-wrap gap-3 mt-4">
+                      <button
+                        onClick={() =>
+                          navigate("/return", { state: { order } })
+                        }
+                        className="bg-blue-500 text-white font-medium px-4 py-1.5 rounded-md text-sm hover:bg-blue-600"
+                      >
+                        Return
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate("/exchange", { state: { order } })
+                        }
+                        className="bg-purple-500 text-white font-medium px-4 py-1.5 rounded-md text-sm hover:bg-purple-600"
+                      >
+                        Exchange
+                      </button>
+                    </div>
                   </>
                 )}
                 {!["Delivered", "Cancelled"].includes(order.orderStatus) && (

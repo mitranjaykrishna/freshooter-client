@@ -10,6 +10,7 @@ import { StaticApi } from "../utils/StaticApi";
 import { services } from "../utils/services";
 import { StaticRoutes } from "../utils/StaticRoutes";
 import { useNavigate } from "react-router";
+import StateCity from "../utils/StateCity.json";
 // --- Checkout Component ---
 const Checkout = () => {
   const navigate = useNavigate();
@@ -24,13 +25,18 @@ const Checkout = () => {
   const [checkoutProducts, setCheckoutProducts] = useState([]);
   const [wasLastItemDeleted, setWasLastItemDeleted] = useState(false);
   const [upiId, setUpiId] = useState("");
+  const [states, setStates] = useState(Object.keys(StateCity));
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedState, setSelectedState] = useState("");
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [cities, setCities] = useState([]);
   const [newAddress, setNewAddress] = useState({
     addressLine1: "",
     addressLine2: "",
     city: "",
     state: "",
     postalCode: "",
-    country: "",
+    country: "India",
     phone: "",
     name: "",
     default: false,
@@ -365,51 +371,6 @@ const Checkout = () => {
               {isEditing ? "Edit Address" : "Add New Address"}
             </h3>
 
-            {/* <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
-              {[
-                ["Name", "userName"],
-                ["Phone", "userNumber"],
-                ["Address Line 1", "addressLine1"],
-                ["Address Line 2", "addressLine2"],
-                ["City", "city"],
-                ["State", "state"],
-                ["Postal Code", "postalCode"],
-                ["Country", "country"],
-              ].map(([label, key]) => (
-                <InputField
-                  key={key}
-                  label={label}
-                  value={newAddress[key]}
-                  onChange={(e) =>
-                    setNewAddress((prev) => ({
-                      ...prev,
-                      [key]: e.target.value,
-                    }))
-                  }
-                />
-              ))}
-
-              <label className="flex items-center gap-2 mt-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-blue-600" // adjust size & style
-                  checked={newAddress.default}
-                  onChange={() =>
-                    setNewAddress((prev) => ({
-                      ...prev,
-                      default: !prev.default,
-                    }))
-                  }
-                />
-                <span className="text-sm leading-none">Set as default</span>
-              </label>
-
-              <ButtonPrimary
-                label={isEditing ? "Update Address" : "Save Address"}
-                handleOnClick={handleAddAddress}
-              />
-            </div> */}
-
             <div className="grid grid-cols-1 gap-3 overflow-y-auto h-[calc(60vh-4rem)] pr-2">
               {[
                 ["Name", "userName"],
@@ -431,51 +392,75 @@ const Checkout = () => {
                 />
               ))}
 
-              {/* Dropdown for City */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                  value={newAddress.city}
-                  onChange={(e) =>
-                    setNewAddress((prev) => ({ ...prev, city: e.target.value }))
-                  }
+              {/* Dropdown for State */}
+              <div className="relative">
+                <label className="block text-sm font-medium  mb-1">State</label>
+                <button
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-left"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  <option value="">Select City</option>
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Delhi">Delhi</option>
-                  <option value="Bengaluru">Bengaluru</option>
-                  <option value="Indore">Indore</option>
-                </select>
+                  {selectedState || "Select State"}
+                </button>
+
+                {dropdownOpen && (
+                  <ul className="absolute z-10 mt-1 w-full border border-gray-300 bg-white max-h-[190px] overflow-y-auto rounded shadow">
+                    {states.map((state) => (
+                      <li
+                        key={state}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setSelectedState(state);
+                          setNewAddress((prev) => ({
+                            ...prev,
+                            state,
+                            city: "",
+                          })); // Reset city when state changes
+                          setCities(StateCity[state] || []); // Load cities from selected state
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        {state}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              {/* Dropdown for State */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                  value={newAddress.state}
-                  onChange={(e) =>
-                    setNewAddress((prev) => ({
-                      ...prev,
-                      state: e.target.value,
-                    }))
-                  }
+              {/* Dropdown for City */}
+              <div className="relative">
+                <label className="block text-sm font-medium  mb-1">City</label>
+                <button
+                  disabled={!selectedState}
+                  className={`w-full border border-gray-300  rounded px-3 py-2 text-left ${
+                    !selectedState ? "cursor-not-allowed" : ""
+                  }`}
+                  onClick={() => {
+                    if (selectedState) setCityDropdownOpen(!cityDropdownOpen);
+                  }}
                 >
-                  <option value="">Select State</option>
-                  <option value="Maharashtra">Maharashtra</option>
-                  <option value="Madhya Pradesh">Madhya Pradesh</option>
-                  <option value="Karnataka">Karnataka</option>
-                  <option value="Delhi">Delhi</option>
-                </select>
+                  {newAddress.city || "Select City"}
+                </button>
+
+                {cityDropdownOpen && (
+                  <ul className="absolute z-10 mt-1 w-full border border-gray-300 bg-white max-h-[190px] overflow-y-auto rounded shadow">
+                    {cities.map((city) => (
+                      <li
+                        key={city}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setNewAddress((prev) => ({ ...prev, city }));
+                          setCityDropdownOpen(false);
+                        }}
+                      >
+                        {city}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {/* Dropdown for Country */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Country
                 </label>
@@ -494,7 +479,19 @@ const Checkout = () => {
                   <option value="USA">USA</option>
                   <option value="Canada">Canada</option>
                 </select>
-              </div>
+              </div> */}
+
+              <InputField
+                key={"country"}
+                label={"Country"}
+                value={newAddress["country"]}
+                // onChange={(e) =>
+                //   setNewAddress((prev) => ({
+                //     ...prev,
+                //     [key]: e.target.value,
+                //   }))
+                // }
+              />
 
               {/* Default address checkbox */}
               <label className="flex items-center gap-2 mt-2 cursor-pointer">
@@ -733,7 +730,9 @@ const InputField = ({ label, type = "text", value, onChange, error }) => (
       type={type}
       value={value}
       onChange={onChange}
-      className={`w-full border rounded p-2 ${error ? "border-red-500" : ""}`}
+      className={`w-full border border-gray-300 rounded p-2 ${
+        error ? "border-red-500" : ""
+      }`}
       placeholder={label}
     />
     {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
