@@ -193,12 +193,12 @@ export default function Header() {
                 onClick={handleProfileToggle}
                 ref={isProfileRef}
               >
-                {/* <div className="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                <div className="bg-[#ff9933] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
                   {localStorage.getItem("userName").charAt(0).toUpperCase()}
-                </div> */}
-                <span className="hidden sm:block text-sm font-medium">
+                </div>
+                {/* <span className="hidden sm:block text-sm font-medium">
                   Welcome, {localStorage.getItem("userName").split(" ")[0]}
-                </span>
+                </span> */}
               </div>
             ) : (
               // If not logged in, show profile icon with dropdown
