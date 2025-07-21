@@ -306,41 +306,43 @@ export default function Orders() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 mt-4">
-                {/* {order.orderStatus === "Delivered" && ( */}
-                <>
-                  <div
-                    onClick={() => buyNow(order.orderItems)}
-                    className="bg-[#4296879a] text-black font-medium py-[10px] px-[10px] cursor-pointer flex items-center justify-center rounded-md text-sm hover:bg-yellow-300 max-h"
-                  >
-                    Buy Again
-                  </div>
-                  <div
-                    onClick={() => navigate(StaticRoutes.terms)}
-                    className="bg-[#ff9933] text-black font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-yellow-300 flex items-center justify-center max-h"
-                  >
-                    Get product support
-                  </div>
-                  <div
-                    onClick={() => returnOrder(order)}
-                    className="bg-blue-500 text-white font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-blue-600 flex items-center justify-center max-h"
-                  >
-                    Return
-                  </div>
-                  <div
-                    onClick={() => exchangeOrder(order)}
-                    className="bg-purple-500 text-white font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-purple-600 flex items-center justify-center max-h"
-                  >
-                    Exchange
-                  </div>
-                </>
-                {/* )} */}
+                <div
+                  onClick={() => buyNow(order.orderItems)}
+                  className="bg-[#4296879a] text-black font-medium py-[10px] px-[10px] cursor-pointer flex items-center justify-center rounded-md text-sm hover:bg-yellow-300 max-h"
+                >
+                  Buy Again
+                </div>
+                {order.orderStatus === "Delivered" && (
+                  <>
+                    <div
+                      onClick={() => navigate(StaticRoutes.terms)}
+                      className="bg-[#ff9933] text-black font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-yellow-300 flex items-center justify-center max-h"
+                    >
+                      Get product support
+                    </div>
+                    <div
+                      onClick={() => returnOrder(order)}
+                      className="bg-blue-500 text-white font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-blue-600 flex items-center justify-center max-h"
+                    >
+                      Return
+                    </div>
+                    <div
+                      onClick={() => exchangeOrder(order)}
+                      className="bg-purple-500 text-white font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-purple-600 flex items-center justify-center max-h"
+                    >
+                      Exchange
+                    </div>
+                  </>
+                )}
                 {!["Delivered", "Cancelled"].includes(order.orderStatus) && (
-                  <button
-                    onClick={() => openCancelModal(order)}
-                    className="border border-red-500 text-red-500 font-medium p-[5px] rounded-md text-sm hover:bg-red-50"
-                  >
-                    Cancel Order
-                  </button>
+                  <>
+                    <button
+                      onClick={() => openCancelModal(order)}
+                      className="border border-red-500 text-red-500 font-medium p-[5px] rounded-md text-sm hover:bg-red-50"
+                    >
+                      Cancel Order
+                    </button>
+                  </>
                 )}
                 <button className="border px-4 py-1.5 rounded-md text-sm hover:bg-gray-100">
                   View Invoice

@@ -46,6 +46,7 @@ const Checkout = () => {
     (sum, item) => sum + item.totalPrice,
     0
   );
+
   const handlePayment = () => {
     if (selectedAddress === null) {
       toast.error("Please select a delivery address");
@@ -55,14 +56,12 @@ const Checkout = () => {
     services
       .post(StaticApi.placeOrder, {
         address: addressList[selectedAddress],
-        // paymentMethod: selectedPayment,
-        selectProductCodes: checkoutProducts.map((p) => p.productCode), // send selected products here
+        selectProductCodes: checkoutProducts.map((p) => p.productCode),
       })
-      .then((res) => {
+      .then(() => {
         toast.success("Order placed successfully");
-        localStorage.removeItem("selectedCheckoutItems"); // Clear after placing order
-        navigate(StaticRoutes.thankYou); // Redirect to thank-you page
-        // Optionally redirect to thank-you page
+        localStorage.removeItem("selectedCheckoutItems");
+        navigate(StaticRoutes.thankYou);
       })
       .catch(() => {
         toast.error("Failed to place order");
@@ -102,7 +101,7 @@ const Checkout = () => {
         toast.success(
           `Address ${editIndex !== null ? "updated" : "added"} successfully`
         );
-        // Store the new address ID if it's a new address
+
         if (editIndex === null && response.data?.addressId) {
           localStorage.setItem("recentlyAddedAddress", response.data.addressId);
         }
@@ -116,7 +115,7 @@ const Checkout = () => {
           city: "",
           state: "",
           postalCode: "",
-          country: "",
+          country: "India", // keep default country
           phone: "",
           name: "",
           default: false,
@@ -155,43 +154,43 @@ const Checkout = () => {
       .get(`${StaticApi.getAllAddressesOfUser}`)
       .then((res) => {
         const data = res?.data || [];
+
+        // Filter out incomplete addresses
         const filteredAddresses = data.filter(
           (address) =>
-            address.state?.trim() !== "" &&
-            address.city?.trim() !== "" &&
-            address.postalCode?.trim() !== ""
+            address.state?.trim() &&
+            address.city?.trim() &&
+            address.postalCode?.trim()
         );
 
-        // Sort with default address first
-        const sortedAddresses = [...filteredAddresses].sort(
-          (a, b) => b.default - a.default
-        );
-
-        setAddressList(sortedAddresses);
-
-        // Check for recently added address in localStorage
         const recentlyAddedId = localStorage.getItem("recentlyAddedAddress");
+        let selectedIndex = 0;
+
+        // Decide selected address index
         if (recentlyAddedId) {
-          const recentlyAddedIndex = sortedAddresses.findIndex(
+          selectedIndex = filteredAddresses.findIndex(
             (addr) => addr.addressId == recentlyAddedId
           );
-          if (recentlyAddedIndex !== -1) {
-            setSelectedAddress(recentlyAddedIndex);
-            localStorage.removeItem("recentlyAddedAddress"); // Clean up after use
-          } else {
-            // Fallback to default selection if recently added address not found
-            const defaultIndex = sortedAddresses.findIndex(
-              (addr) => addr.default
-            );
-            setSelectedAddress(defaultIndex !== -1 ? defaultIndex : 0);
+
+          if (selectedIndex === -1) {
+            selectedIndex = filteredAddresses.findIndex((addr) => addr.default);
           }
+
+          // localStorage.removeItem("recentlyAddedAddress");
         } else {
-          // Normal selection when no recently added address
-          const defaultIndex = sortedAddresses.findIndex(
-            (addr) => addr.default
-          );
-          setSelectedAddress(defaultIndex !== -1 ? defaultIndex : 0);
+          selectedIndex = filteredAddresses.findIndex((addr) => addr.default);
         }
+
+        if (selectedIndex === -1) selectedIndex = 0;
+
+        // Move selected address to the top
+        const sortedAddresses = [
+          filteredAddresses[selectedIndex],
+          ...filteredAddresses.filter((_, idx) => idx !== selectedIndex),
+        ];
+
+        setAddressList(sortedAddresses);
+        setSelectedAddress(0); // Always select the top one
       })
       .catch(() => toast.error("Failed to fetch addresses"));
   };
@@ -217,11 +216,11 @@ const Checkout = () => {
     );
     setCheckoutProducts(updatedItems);
 
-    // If only one item was left before deletion, set flag to true
     if (checkoutProducts.length === 1) {
       setWasLastItemDeleted(true);
     }
   };
+
   useEffect(() => {
     if (checkoutProducts.length === 0 && wasLastItemDeleted) {
       navigate(StaticRoutes.home);
@@ -240,7 +239,7 @@ const Checkout = () => {
           {(showMore ? addressList : addressList.slice(0, 1)).map(
             (addr, index) => (
               <AddressCard
-                key={addr.addressId} // Use addressId as key instead of index
+                key={addr.addressId}
                 address={addr}
                 selected={selectedAddress === index}
                 onChange={() => setSelectedAddress(index)}
@@ -308,7 +307,6 @@ const Checkout = () => {
             onQuantityChange={(item, newQty) => {
               if (newQty < 1) return;
 
-              // Update frontend immediately
               const updated = checkoutProducts.map((i) =>
                 i.productId === item.productId ? { ...i, quantity: newQty } : i
               );
@@ -318,11 +316,9 @@ const Checkout = () => {
                 JSON.stringify(updated)
               );
 
-              // Determine quantity change (+1 or -1)
               const change = newQty - item.quantity;
 
               if (change > 0) {
-                // Add quantity
                 services
                   .post(
                     `${StaticApi.addToCart}?productCode=${item.productCode}&quantity=${change}`
@@ -330,7 +326,6 @@ const Checkout = () => {
                   .then(() => toast.success(`${change} item(s) added to cart`))
                   .catch(() => toast.error("Failed to update cart"));
               } else {
-                // Remove quantity
                 services
                   .delete(
                     `${StaticApi.removeSingleItemCart}?productCode=${
@@ -345,7 +340,7 @@ const Checkout = () => {
             }}
             onRemove={(item) => handleDeleteCheckoutItem(item.productId)}
           />
-        ))}{" "}
+        ))}
         <PriceSummary subtotal={subtotal} shipping={0} />
         <div className="mt-6 w-max">
           <ButtonPrimary label="Place Order" handleOnClick={handlePayment} />
@@ -414,8 +409,8 @@ const Checkout = () => {
                             ...prev,
                             state,
                             city: "",
-                          })); // Reset city when state changes
-                          setCities(StateCity[state] || []); // Load cities from selected state
+                          }));
+                          setCities(StateCity[state] || []);
                           setDropdownOpen(false);
                         }}
                       >
@@ -428,15 +423,11 @@ const Checkout = () => {
 
               {/* Dropdown for City */}
               <div className="relative">
-                <label className="block text-sm font-medium  mb-1">City</label>
+                <label className="block text-sm font-medium mb-1">City</label>
                 <button
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-left"
+                  onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
                   disabled={!selectedState}
-                  className={`w-full border border-gray-300  rounded px-3 py-2 text-left ${
-                    !selectedState ? "cursor-not-allowed" : ""
-                  }`}
-                  onClick={() => {
-                    if (selectedState) setCityDropdownOpen(!cityDropdownOpen);
-                  }}
                 >
                   {newAddress.city || "Select City"}
                 </button>
@@ -459,28 +450,6 @@ const Checkout = () => {
                 )}
               </div>
 
-              {/* Dropdown for Country */}
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Country
-                </label>
-                <select
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                  value={newAddress.country}
-                  onChange={(e) =>
-                    setNewAddress((prev) => ({
-                      ...prev,
-                      country: e.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select Country</option>
-                  <option value="India">India</option>
-                  <option value="USA">USA</option>
-                  <option value="Canada">Canada</option>
-                </select>
-              </div> */}
-
               <InputField
                 key={"country"}
                 label={"Country"}
@@ -493,21 +462,20 @@ const Checkout = () => {
                 // }
               />
 
-              {/* Default address checkbox */}
-              <label className="flex items-center gap-2 mt-2 cursor-pointer">
+              <div className="flex items-center gap-2 mt-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-blue-600"
+                  id="defaultAddr"
                   checked={newAddress.default}
-                  onChange={() =>
+                  onChange={(e) =>
                     setNewAddress((prev) => ({
                       ...prev,
-                      default: !prev.default,
+                      default: e.target.checked,
                     }))
                   }
                 />
-                <span className="text-sm leading-none">Set as default</span>
-              </label>
+                <label htmlFor="defaultAddr">Set as default address</label>
+              </div>
 
               {/* Save/Update Button */}
               <ButtonPrimary
@@ -519,6 +487,7 @@ const Checkout = () => {
         </div>
       )}
 
+      {/* Card Modal */}
       {showCardModal && (
         <AddCardModal
           onClose={() => setShowCardModal(false)}
