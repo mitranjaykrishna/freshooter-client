@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { services } from "../utils/services";
 import { StaticApi } from "../utils/StaticApi";
 import { toast } from "react-toastify";
@@ -14,7 +14,7 @@ export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [loading, setLoading] = useState(false);
-const navigate = useNavigate()
+  const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem("token");
 
   const getCartItems = () => {
@@ -30,51 +30,57 @@ const navigate = useNavigate()
       .finally(() => setLoading(false));
   };
 
-const handleQuantityChange = (productCode, change) => {
-  const item = cartItems.find((i) => i.productCode === productCode);
-  if (!item) return;
+  const handleQuantityChange = (productCode, change) => {
+    const item = cartItems.find((i) => i.productCode === productCode);
+    if (!item) return;
 
-  const newQuantity = item.quantity + change;
+    const newQuantity = item.quantity + change;
 
-  if (newQuantity <= 0) {
-    // Remove the item if quantity becomes 0 or less
-    services
-      .delete(`${StaticApi.removeFromCart}?productCode=${productCode}`)
-      .then(() => {
-        toast.success("Item removed");
-        getCartItems()
-      })
-      .catch(() => toast.error("Failed to remove item"));
-  } else {
-    // Update quantity locally
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.productCode === productCode
-          ? { ...item, quantity: newQuantity }
-          : item
-      )
-    );
+    if (change === -1) {
+      if (newQuantity <= 0) {
+        removeSingleItemFromCart(productCode, 1); // remove 1 unit
+      } else {
+        // Update quantity locally
+        setCartItems((prev) =>
+          prev.map((item) =>
+            item.productCode === productCode
+              ? { ...item, quantity: newQuantity }
+              : item
+          )
+        );
 
-    // Call Add to Cart API with updated quantity
-    services
-      .post(
-        `${StaticApi.addToCart}?productCode=${productCode}&quantity=${newQuantity}`
-      )
-      .then(() => {
-        toast.success("Cart updated");
-      })
-      .catch(() => toast.error("Failed to update cart"));
-  }
-};
+        removeSingleItemFromCart(productCode, 1);
+      }
+    }
 
+    if (change === 1) {
+      // Update quantity locally
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.productCode === productCode
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
 
-
+      services
+        .post(`${StaticApi.addToCart}?productCode=${productCode}&quantity=1`)
+        .then(() => {
+          toast.success("Item added");
+          getCartItems();
+        })
+        .catch(() => toast.error("Failed to update cart"));
+    }
+  };
   const handleRemove = (productCode) => {
     services
       .delete(`${StaticApi.removeProductFromCart}?productCode=${productCode}`)
       .then(() => {
         toast.success("Item removed");
-        setCartItems((prev) => prev.filter((item) => item.productCode !== productCode));
+        getCartItems();
+        setCartItems((prev) =>
+          prev.filter((item) => item.productCode !== productCode)
+        );
         setSelectedItems((prev) => prev.filter((id) => id !== productCode));
       })
       .catch(() => toast.error("Failed to remove item"));
@@ -96,13 +102,24 @@ const handleQuantityChange = (productCode, change) => {
     }
   };
 
-  const totalAmount = cartItems.reduce(
-    (sum, item) =>
-      selectedItems.includes(item.productCode)
-        ? sum + item.totalPrice * item.quantity
-        : sum,
-    0
-  );
+  const totalAmount = useMemo(() => {
+    return cartItems.reduce(
+      (sum, item) =>
+        selectedItems.includes(item.productCode) ? sum + item.totalPrice : sum,
+      0
+    );
+  }, [cartItems]);
+  const removeSingleItemFromCart = (productCode, quantity = 1) => {
+    services
+      .delete(
+        `${StaticApi.removeSingleItemCart}?productCode=${productCode}&quantity=${quantity}`
+      )
+      .then(() => {
+        toast.success("1 item removed");
+        getCartItems();
+      })
+      .catch(() => toast.error("Failed to remove item"));
+  };
 
   useEffect(() => {
     getCartItems();
@@ -116,41 +133,47 @@ const handleQuantityChange = (productCode, change) => {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold  text-primary">Shopping Cart</h1>
             {cartItems?.length > 0 && (
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedItems.length === cartItems.length}
-                onChange={toggleSelectAll}
-                className="w-5 h-5"
-              />
-              Select All
-            </label>)}
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.length === cartItems.length}
+                  onChange={toggleSelectAll}
+                  className="w-5 h-5"
+                />
+                Select All
+              </label>
+            )}
           </div>
 
-          {!isLoggedIn ?  <div className="text-center  text-primary text-lg font-medium">
-                   Please log in to view your cart. <div className="w-max flex self-center justify-self-center mt-4"> <ButtonPrimary
-                                                 label="Login " 
-                                                 handleOnClick={() => navigate(StaticRoutes.signin)}
-                                               /> </div>  <img
-                                    src={login}
-                                    alt="login"
-                                    className="w-full object-cover"
-                                  />  
-                    </div>  :loading ? (
+          {!isLoggedIn ? (
+            <div className="text-center  text-primary text-lg font-medium">
+              Please log in to view your cart.{" "}
+              <div className="w-max flex self-center justify-self-center mt-4">
+                {" "}
+                <ButtonPrimary
+                  label="Login "
+                  handleOnClick={() => navigate(StaticRoutes.signin)}
+                />{" "}
+              </div>{" "}
+              <img src={login} alt="login" className="w-full object-cover" />
+            </div>
+          ) : loading ? (
             <p className="text-center py-10 text-gray-500">Loading...</p>
           ) : cartItems.length === 0 ? (
-          
-
-             <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center"> <div className="w-max gap-[20px] flex flex-col justify-center items-center">   <p className="text-centers text-primary font-semibold text-lg">
-              Your cart is empty
-            </p> <ButtonPrimary
-                                          label="Explore Products"
-                                          handleOnClick={() => navigate("/")}
-                                        /> </div> <img
-                                      src={empty}
-                                      alt="empty"
-                                      className="w-full object-cover"
-                                    />    </div>
+            <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center">
+              {" "}
+              <div className="w-max gap-[20px] flex flex-col justify-center items-center">
+                {" "}
+                <p className="text-centers text-primary font-semibold text-lg">
+                  Your cart is empty
+                </p>{" "}
+                <ButtonPrimary
+                  label="Explore Products"
+                  handleOnClick={() => navigate("/")}
+                />{" "}
+              </div>{" "}
+              <img src={empty} alt="empty" className="w-full object-cover" />{" "}
+            </div>
           ) : (
             cartItems?.map((item) => (
               <div
@@ -160,37 +183,62 @@ const handleQuantityChange = (productCode, change) => {
                 <div className="relative w-full flex-shrink-0 sm:hidden">
                   <input
                     type="checkbox"
-                    className="absolute top-1 left-1 w-4 h-4"
+                    className="absolute top-1 left-1 w-4 h-4 cursor-pointer"
                     checked={selectedItems.includes(item.productCode)}
-                    onChange={() => toggleItemSelect(item.productCode)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleItemSelect(item.productCode);
+                    }}
                   />
                   <img
                     src={item.imageUrl || dairydumm}
                     alt={item.productName}
                     className="w-full h-full object-cover rounded-md"
+                    onClick={() => {
+                      navigate(`/product/${item.productCode}`);
+                    }}
                   />
                 </div>
+
                 <div className="hidden sm:flex items-center gap-3">
                   <input
                     type="checkbox"
-                    className="h-5 w-5"
+                    className="h-5 w-5 cursor-pointer"
                     checked={selectedItems.includes(item.productCode)}
-                    onChange={() => toggleItemSelect(item.productCode)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleItemSelect(item.productCode);
+                    }}
                   />
                   <div className="w-[100px] h-[100px] flex-shrink-0">
                     <img
                       src={item.imageUrl || dairydumm}
                       alt={item.productName}
                       className="w-full h-full object-cover rounded-md"
+                      onClick={() => {
+                        navigate(`/product/${item.productCode}`);
+                      }}
                     />
                   </div>
                 </div>
-                <div className="flex-1 w-full">
+
+                <div
+                  className="flex-1 w-full"
+                  onClick={() => {
+                    navigate(`/product/${item.productCode}`);
+                  }}
+                >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className="text-lg font-semibold">{item.productName}</h2>
-                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                      <p className="text-xs text-gray-500 mt-1">Return eligible</p>
+                      <h2 className="text-lg font-semibold">
+                        {item.productName}
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        Qty: {item.quantity}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Return eligible
+                      </p>
                     </div>
                     <div className="text-right">
                       <span className="text-primary font-bold text-lg">
@@ -202,18 +250,25 @@ const handleQuantityChange = (productCode, change) => {
                   <div className="flex items-center gap-3 mt-2 text-sm text-gray-600 flex-wrap">
                     <div className="flex items-center gap-2 bg-quaternary px-2 py-1 rounded-md">
                       <button
-                        onClick={() => handleQuantityChange(item.productCode, -1)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuantityChange(item.productCode, -1);
+                        }}
                         disabled={item.quantity === 1}
-                        className={`p-1 rounded-md ${item.quantity === 1
-                          ? "cursor-not-allowed text-gray-400"
-                          : "hover:bg-gray-300"
-                          }`}
+                        className={`p-1 rounded-md ${
+                          item.quantity === 1
+                            ? "cursor-not-allowed text-gray-400"
+                            : "hover:bg-gray-300"
+                        }`}
                       >
                         <Minus className="w-4 h-4" />
                       </button>
                       <span className="font-semibold">{item.quantity}</span>
                       <button
-                        onClick={() => handleQuantityChange(item.productCode, 1)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuantityChange(item.productCode, 1);
+                        }}
                         className="p-1 rounded-md hover:bg-gray-300"
                       >
                         <Plus className="w-4 h-4" />
@@ -221,15 +276,29 @@ const handleQuantityChange = (productCode, change) => {
                     </div>
 
                     <span>|</span>
+
                     <button
                       className="text-red-500 flex items-center gap-1 hover:underline"
-                      onClick={() => handleRemove(item.productCode)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemove(item.productCode);
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete
                     </button>
-                    <span>|</span>
-                    <button className="hover:underline">Save for later</button>
+
+                    {/* <span>|</span> */}
+
+                    {/* <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Add your "Save for later" logic here
+                      }}
+                      className="hover:underline"
+                    >
+                      Save for later
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -249,23 +318,23 @@ const handleQuantityChange = (productCode, change) => {
             </div>
             <div className="flex justify-between text-sm font-medium">
               <span>Total Price:</span>
-              <span className="text-primary font-semibold">₹{totalAmount.toFixed(2)}</span>
+              <span className="text-primary font-semibold">
+                ₹{totalAmount?.toFixed(2)}
+              </span>
             </div>
             <button
               className="mt-4 bg-primary hover:bg-secondary text-white py-2 rounded-md text-sm transition"
-             onClick={() => {
-  const selectedProductDetails = cartItems
-    .filter((item) => selectedItems.includes(item.productCode))
-    .map((item) => ({
-      productCode: item.productCode,
-      quantity: item.quantity,
-      totalPrice: item.totalPrice,
-      productName: item.productName,
-    }));
+              onClick={() => {
+                const selectedProductDetails = cartItems.filter((item) =>
+                  selectedItems.includes(item.productCode)
+                );
 
-  localStorage.setItem("selectedCheckoutItems", JSON.stringify(selectedProductDetails));
-  navigate("/checkout");
-}}
+                localStorage.setItem(
+                  "selectedCheckoutItems",
+                  JSON.stringify(selectedProductDetails)
+                );
+                navigate("/checkout");
+              }}
               disabled={selectedItems.length === 0}
             >
               Proceed to Checkout

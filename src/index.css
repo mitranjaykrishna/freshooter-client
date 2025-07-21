@@ -97,3 +97,7 @@
 .wishlist-bounce {
   animation: wishlist-bounce 0.4s ease-in-out;
 }
+
+html {
+  scrollbar-gutter: stable;
+}

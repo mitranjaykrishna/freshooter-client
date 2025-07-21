@@ -10,9 +10,10 @@ import { StaticApi } from "../utils/StaticApi";
 import { services } from "../utils/services";
 import { StaticRoutes } from "../utils/StaticRoutes";
 import { useNavigate } from "react-router";
+import StateCity from "../utils/StateCity.json";
 // --- Checkout Component ---
 const Checkout = () => {
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const [selectedPayment, setSelectedPayment] = useState("cod");
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -20,53 +21,61 @@ const Checkout = () => {
   const [addressList, setAddressList] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showMore, setShowMore] = useState(false);
-const [showCardModal, setShowCardModal] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
   const [checkoutProducts, setCheckoutProducts] = useState([]);
-const [wasLastItemDeleted, setWasLastItemDeleted] = useState(false);
-const [upiId, setUpiId] = useState("");
+  const [wasLastItemDeleted, setWasLastItemDeleted] = useState(false);
+  const [upiId, setUpiId] = useState("");
+  const [states, setStates] = useState(Object.keys(StateCity));
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedState, setSelectedState] = useState("");
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [cities, setCities] = useState([]);
   const [newAddress, setNewAddress] = useState({
     addressLine1: "",
     addressLine2: "",
     city: "",
     state: "",
     postalCode: "",
-    country: "",
+    country: "India",
     phone: "",
     name: "",
     default: false,
   });
 
+  const subtotal = checkoutProducts?.reduce(
+    (sum, item) => sum + item.totalPrice,
+    0
+  );
 
+  const handlePayment = () => {
+    if (selectedAddress === null) {
+      toast.error("Please select a delivery address");
+      return;
+    }
 
-const subtotal = checkoutProducts?.reduce(
-  (sum, item) => sum + item.totalPrice * item.quantity,
-  0
-);
-const handlePayment = () => {
-  if (selectedAddress === null) {
-    toast.error("Please select a delivery address");
-    return;
-  }
-
-  services
-    .post(StaticApi.placeOrder, {
-      address: addressList[selectedAddress],
-      paymentMethod: selectedPayment,
-      products: checkoutProducts, // send selected products here
-    })
-    .then(() => {
-      toast.success("Order placed successfully");
-      localStorage.removeItem("selectedCheckoutItems"); // Clear after placing order
-      // Optionally redirect to thank-you page
-    })
-    .catch(() => {
-      toast.error("Failed to place order");
-    });
-};
-
+    services
+      .post(StaticApi.placeOrder, {
+        address: addressList[selectedAddress],
+        selectProductCodes: checkoutProducts.map((p) => p.productCode),
+      })
+      .then(() => {
+        toast.success("Order placed successfully");
+        localStorage.removeItem("selectedCheckoutItems");
+        navigate(StaticRoutes.thankYou);
+      })
+      .catch(() => {
+        toast.error("Failed to place order");
+      });
+  };
 
   const handleAddAddress = () => {
-    const requiredFields = ["addressLine1", "city", "state", "postalCode", "country"];
+    const requiredFields = [
+      "addressLine1",
+      "city",
+      "state",
+      "postalCode",
+      "country",
+    ];
     let isValid = true;
     let newError = {};
 
@@ -79,13 +88,24 @@ const handlePayment = () => {
 
     if (!isValid) return;
 
-    const apiCall = editIndex !== null
-      ? services.put(`${StaticApi.updateAddress}/${newAddress.addressId}`, newAddress)
-      : services.post(StaticApi.createAddress, newAddress);
+    const apiCall =
+      editIndex !== null
+        ? services.put(
+            `${StaticApi.updateAddress}/${newAddress.addressId}`,
+            newAddress
+          )
+        : services.post(StaticApi.createAddress, newAddress);
 
     apiCall
-      .then(() => {
-        toast.success(`Address ${editIndex !== null ? "updated" : "added"} successfully`);
+      .then((response) => {
+        toast.success(
+          `Address ${editIndex !== null ? "updated" : "added"} successfully`
+        );
+
+        if (editIndex === null && response.data?.addressId) {
+          localStorage.setItem("recentlyAddedAddress", response.data.addressId);
+        }
+
         setShowAddAddress(false);
         setIsEditing(false);
         setEditIndex(null);
@@ -95,7 +115,7 @@ const handlePayment = () => {
           city: "",
           state: "",
           postalCode: "",
-          country: "",
+          country: "India", // keep default country
           phone: "",
           name: "",
           default: false,
@@ -103,40 +123,74 @@ const handlePayment = () => {
         getAllAddress();
       })
       .catch(() => {
-        toast.error(`Failed to ${editIndex !== null ? "update" : "add"} address`);
+        toast.error(
+          `Failed to ${editIndex !== null ? "update" : "add"} address`
+        );
       });
   };
 
-  const handleDeleteAddress =(addressId)=>{
-services.delete(`${StaticApi.deleteAddress}/${addressId}`).then(() => {
+  const handleDeleteAddress = (addressId) => {
+    services
+      .delete(`${StaticApi.deleteAddress}/${addressId}`)
+      .then(() => {
         toast.success("Address deleted successfully");
         getAllAddress();
-      } ).catch(() => {}  )
-  }
+      })
+      .catch(() => {});
+  };
 
-    const handleSetDefaultAddress =(addressId)=>{
-    services.post(`${StaticApi.setDefaultAddress}/${addressId}`).then(() => {
+  const handleSetDefaultAddress = (addressId) => {
+    services
+      .post(`${StaticApi.setDefaultAddress}/${addressId}`)
+      .then(() => {
         toast.success("Address updated successfully");
         getAllAddress();
-      } ).catch(() => {}  )
-  }
+      })
+      .catch(() => {});
+  };
 
   const getAllAddress = () => {
     services
       .get(`${StaticApi.getAllAddressesOfUser}`)
       .then((res) => {
         const data = res?.data || [];
+
+        // Filter out incomplete addresses
         const filteredAddresses = data.filter(
           (address) =>
-            address.state?.trim() !== "" &&
-            address.city?.trim() !== "" &&
-            address.postalCode?.trim() !== ""
+            address.state?.trim() &&
+            address.city?.trim() &&
+            address.postalCode?.trim()
         );
 
-        setAddressList(filteredAddresses);
+        const recentlyAddedId = localStorage.getItem("recentlyAddedAddress");
+        let selectedIndex = 0;
 
-        const defaultIndex = filteredAddresses.findIndex((addr) => addr.default);
-        setSelectedAddress(defaultIndex !== -1 ? defaultIndex : filteredAddresses.length > 0 ? 0 : null);
+        // Decide selected address index
+        if (recentlyAddedId) {
+          selectedIndex = filteredAddresses.findIndex(
+            (addr) => addr.addressId == recentlyAddedId
+          );
+
+          if (selectedIndex === -1) {
+            selectedIndex = filteredAddresses.findIndex((addr) => addr.default);
+          }
+
+          // localStorage.removeItem("recentlyAddedAddress");
+        } else {
+          selectedIndex = filteredAddresses.findIndex((addr) => addr.default);
+        }
+
+        if (selectedIndex === -1) selectedIndex = 0;
+
+        // Move selected address to the top
+        const sortedAddresses = [
+          filteredAddresses[selectedIndex],
+          ...filteredAddresses.filter((_, idx) => idx !== selectedIndex),
+        ];
+
+        setAddressList(sortedAddresses);
+        setSelectedAddress(0); // Always select the top one
       })
       .catch(() => toast.error("Failed to fetch addresses"));
   };
@@ -150,29 +204,30 @@ services.delete(`${StaticApi.deleteAddress}/${addressId}`).then(() => {
 
   useEffect(() => {
     getAllAddress();
-     const stored = localStorage.getItem("selectedCheckoutItems");
-  if (stored) {
-    setCheckoutProducts(JSON.parse(stored));
-  }
+    const stored = localStorage.getItem("selectedCheckoutItems");
+    if (stored) {
+      setCheckoutProducts(JSON.parse(stored));
+    }
   }, []);
 
-const handleDeleteCheckoutItem = (productId) => {
-  const updatedItems = checkoutProducts.filter(
-    (item) => item.productId !== productId
-  );
-  setCheckoutProducts(updatedItems);
+  const handleDeleteCheckoutItem = (productId) => {
+    const updatedItems = checkoutProducts.filter(
+      (item) => item.productId !== productId
+    );
+    setCheckoutProducts(updatedItems);
 
-  // If only one item was left before deletion, set flag to true
-  if (checkoutProducts.length === 1) {
-    setWasLastItemDeleted(true);
-  }
-};
-useEffect(() => {
-  if (checkoutProducts.length === 0 && wasLastItemDeleted) {
-    navigate(StaticRoutes.home);
-    localStorage.setItem("selectedCheckoutItems", JSON.stringify([]));
-  }
-}, [checkoutProducts, wasLastItemDeleted]);
+    if (checkoutProducts.length === 1) {
+      setWasLastItemDeleted(true);
+    }
+  };
+
+  useEffect(() => {
+    if (checkoutProducts.length === 0 && wasLastItemDeleted) {
+      navigate(StaticRoutes.home);
+      localStorage.setItem("selectedCheckoutItems", JSON.stringify([]));
+    }
+  }, [checkoutProducts, wasLastItemDeleted]);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <h1 className="text-3xl font-bold mb-6 text-center">Checkout</h1>
@@ -181,22 +236,24 @@ useEffect(() => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
         <div className="grid gap-4">
-          {(showMore ? addressList : addressList.slice(0, 2)).map((addr, index) => (
-           <AddressCard
-    key={index}
-    address={addr}
-    selected={selectedAddress === index}
-    onChange={() => setSelectedAddress(index)}
-    onEdit={(addr) => {
-      setIsEditing(true);
-      setEditIndex(index);
-      setNewAddress(addr);
-      setShowAddAddress(true);
-    }}
-    onDelete={()=>handleDeleteAddress(addr.addressId)}
-    onSetDefault={()=>handleSetDefaultAddress(addr.addressId)}
-  />
-          ))}
+          {(showMore ? addressList : addressList.slice(0, 1)).map(
+            (addr, index) => (
+              <AddressCard
+                key={addr.addressId}
+                address={addr}
+                selected={selectedAddress === index}
+                onChange={() => setSelectedAddress(index)}
+                onEdit={(addr) => {
+                  setIsEditing(true);
+                  setEditIndex(index);
+                  setNewAddress(addr);
+                  setShowAddAddress(true);
+                }}
+                onDelete={() => handleDeleteAddress(addr.addressId)}
+                onSetDefault={() => handleSetDefaultAddress(addr.addressId)}
+              />
+            )
+          )}
 
           {addressList.length > 2 && (
             <button
@@ -220,35 +277,71 @@ useEffect(() => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4">Payment method</h2>
         <div className="grid gap-4">
-          <CardPaymentOption setShowCardModal={setShowCardModal}  selected={selectedPayment === "card"} onChange={() => setSelectedPayment("card")}/>
-        <UpiInputCard selected={selectedPayment === "upi"}
-  onChange={() => setSelectedPayment("upi")}
-  upiId={upiId}
-  setUpiId={setUpiId}
-  onVerify={() => console.log("Verifying", upiId)}/>
-          <PaymentMethodCard label="Cash on Delivery" selected={selectedPayment === "cod"} onChange={() => setSelectedPayment("cod")} />
+          <CardPaymentOption
+            setShowCardModal={setShowCardModal}
+            selected={selectedPayment === "card"}
+            onChange={() => setSelectedPayment("card")}
+          />
+          <UpiInputCard
+            selected={selectedPayment === "upi"}
+            onChange={() => setSelectedPayment("upi")}
+            upiId={upiId}
+            setUpiId={setUpiId}
+            onVerify={() => console.log("Verifying", upiId)}
+          />
+          <PaymentMethodCard
+            label="Cash on Delivery"
+            selected={selectedPayment === "cod"}
+            onChange={() => setSelectedPayment("cod")}
+          />
         </div>
       </div>
-
-     
 
       {/* Order Summary */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-{checkoutProducts.map((item, idx) => (
-  <OrderItem
-    key={idx}
-    item={item}
-    onQuantityChange={(item, newQty) => {
-      const updated = checkoutProducts.map((i) =>
-        i.productId === item.productId ? { ...i, quantity: newQty, totalPrice: newQty * i.price } : i
-      );
-      setCheckoutProducts(updated);
-      localStorage.setItem("selectedCheckoutItems", JSON.stringify(updated));
-    }}
-   onRemove={(item) => handleDeleteCheckoutItem(item.productId)}
-  />
-))}    <PriceSummary subtotal={subtotal} shipping={0} />
+        {checkoutProducts.map((item, idx) => (
+          <OrderItem
+            key={idx}
+            item={item}
+            onQuantityChange={(item, newQty) => {
+              if (newQty < 1) return;
+
+              const updated = checkoutProducts.map((i) =>
+                i.productId === item.productId ? { ...i, quantity: newQty } : i
+              );
+              setCheckoutProducts(updated);
+              localStorage.setItem(
+                "selectedCheckoutItems",
+                JSON.stringify(updated)
+              );
+
+              const change = newQty - item.quantity;
+
+              if (change > 0) {
+                services
+                  .post(
+                    `${StaticApi.addToCart}?productCode=${item.productCode}&quantity=${change}`
+                  )
+                  .then(() => toast.success(`${change} item(s) added to cart`))
+                  .catch(() => toast.error("Failed to update cart"));
+              } else {
+                services
+                  .delete(
+                    `${StaticApi.removeSingleItemCart}?productCode=${
+                      item.productCode
+                    }&quantity=${-change}`
+                  )
+                  .then(() =>
+                    toast.success(`${-change} item(s) removed from cart`)
+                  )
+                  .catch(() => toast.error("Failed to update cart"));
+              }
+            }}
+            onRemove={(item) => handleDeleteCheckoutItem(item.productId)}
+          />
+        ))}
+        <PriceSummary subtotal={subtotal} shipping={0} />
         <div className="mt-6 w-max">
           <ButtonPrimary label="Place Order" handleOnClick={handlePayment} />
         </div>
@@ -265,7 +358,9 @@ useEffect(() => {
                 setEditIndex(null);
               }}
               className="absolute top-2 right-4 text-gray-600 hover:text-black text-xl"
-            >✕</button>
+            >
+              ✕
+            </button>
 
             <h3 className="text-lg font-semibold mb-4">
               {isEditing ? "Edit Address" : "Add New Address"}
@@ -277,32 +372,112 @@ useEffect(() => {
                 ["Phone", "userNumber"],
                 ["Address Line 1", "addressLine1"],
                 ["Address Line 2", "addressLine2"],
-                ["City", "city"],
-                ["State", "state"],
                 ["Postal Code", "postalCode"],
-                ["Country", "country"],
               ].map(([label, key]) => (
                 <InputField
                   key={key}
                   label={label}
                   value={newAddress[key]}
                   onChange={(e) =>
-                    setNewAddress((prev) => ({ ...prev, [key]: e.target.value }))
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }))
                   }
                 />
               ))}
 
-              <label className="flex items-center gap-2 mt-2">
+              {/* Dropdown for State */}
+              <div className="relative">
+                <label className="block text-sm font-medium  mb-1">State</label>
+                <button
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-left"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                  {selectedState || "Select State"}
+                </button>
+
+                {dropdownOpen && (
+                  <ul className="absolute z-10 mt-1 w-full border border-gray-300 bg-white max-h-[190px] overflow-y-auto rounded shadow">
+                    {states.map((state) => (
+                      <li
+                        key={state}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setSelectedState(state);
+                          setNewAddress((prev) => ({
+                            ...prev,
+                            state,
+                            city: "",
+                          }));
+                          setCities(StateCity[state] || []);
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        {state}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Dropdown for City */}
+              <div className="relative">
+                <label className="block text-sm font-medium mb-1">City</label>
+                <button
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-left"
+                  onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+                  disabled={!selectedState}
+                >
+                  {newAddress.city || "Select City"}
+                </button>
+
+                {cityDropdownOpen && (
+                  <ul className="absolute z-10 mt-1 w-full border border-gray-300 bg-white max-h-[190px] overflow-y-auto rounded shadow">
+                    {cities.map((city) => (
+                      <li
+                        key={city}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          setNewAddress((prev) => ({ ...prev, city }));
+                          setCityDropdownOpen(false);
+                        }}
+                      >
+                        {city}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <InputField
+                key={"country"}
+                label={"Country"}
+                value={newAddress["country"]}
+                // onChange={(e) =>
+                //   setNewAddress((prev) => ({
+                //     ...prev,
+                //     [key]: e.target.value,
+                //   }))
+                // }
+              />
+
+              <div className="flex items-center gap-2 mt-2">
                 <input
                   type="checkbox"
+                  id="defaultAddr"
                   checked={newAddress.default}
-                  onChange={() =>
-                    setNewAddress((prev) => ({ ...prev, default: !prev.default }))
+                  onChange={(e) =>
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      default: e.target.checked,
+                    }))
                   }
                 />
-                Set as default
-              </label>
+                <label htmlFor="defaultAddr">Set as default address</label>
+              </div>
 
+              {/* Save/Update Button */}
               <ButtonPrimary
                 label={isEditing ? "Update Address" : "Save Address"}
                 handleOnClick={handleAddAddress}
@@ -312,15 +487,16 @@ useEffect(() => {
         </div>
       )}
 
+      {/* Card Modal */}
       {showCardModal && (
-  <AddCardModal
-    onClose={() => setShowCardModal(false)}
-    onSubmit={(cardData) => {
-      console.log("New Card:", cardData);
-      setShowCardModal(false);
-    }}
-  />
-)}
+        <AddCardModal
+          onClose={() => setShowCardModal(false)}
+          onSubmit={(cardData) => {
+            console.log("New Card:", cardData);
+            setShowCardModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -336,9 +512,11 @@ const AddressCard = ({
   onDelete,
   onSetDefault,
 }) => (
-  <label className={`block border flex justify-between items-start rounded-lg p-4 transition cursor-pointer ${
-    selected ? "border-primary bg-green-50" : "hover:border-primary"
-  }`}>
+  <label
+    className={`block border flex justify-between items-start rounded-lg p-4 transition cursor-pointer ${
+      selected ? "border-primary bg-green-50" : "hover:border-primary"
+    }`}
+  >
     <div className="flex items-start gap-3">
       <input
         type="radio"
@@ -348,13 +526,19 @@ const AddressCard = ({
         className="mt-1"
       />
       <div>
-        <p className="font-semibold">{address.userName ? address.userName  : "N/A"} - {address.userNumber}</p>
+        <p className="font-semibold">
+          {address.userName ? address.userName : "N/A"} - {address.userNumber}
+        </p>
         <p>{address.addressLine1}</p>
-        <p>{address.city}, {address.state} - {address.postalCode}</p>
+        <p>
+          {address.city}, {address.state} - {address.postalCode}
+        </p>
         <p className="text-sm text-gray-600">{address.phone}</p>
 
         {address.default ? (
-          <span className="text-sm font-semibold text-green-600 mt-2 inline-block">★ Default Address</span>
+          <span className="text-sm font-semibold text-green-600 mt-2 inline-block">
+            ★ Default Address
+          </span>
         ) : (
           <button
             type="button"
@@ -377,7 +561,7 @@ const AddressCard = ({
           e.stopPropagation();
           onEdit(address);
         }}
-        className="text-gray-500 hover:text-primary transition text-sm"
+        className="text-gray-500 hover:text-primary transition text-sm cursor-pointer"
         title="Edit address"
       >
         ✏️
@@ -388,7 +572,7 @@ const AddressCard = ({
           e.stopPropagation();
           onDelete(address);
         }}
-        className="text-red-500 hover:text-red-700 transition text-sm"
+        className="text-red-500 hover:text-red-700 transition text-sm cursor-pointer"
         title="Delete address"
       >
         🗑️
@@ -417,7 +601,6 @@ const PaymentMethodCard = ({ label, selected, onChange }) => (
 );
 
 const OrderItem = ({ item, onQuantityChange, onRemove }) => {
-
   return (
     <div className="flex gap-4 border rounded p-4 mb-4 shadow-sm max-w-[50%]">
       {/* Image */}
@@ -430,46 +613,49 @@ const OrderItem = ({ item, onQuantityChange, onRemove }) => {
       {/* Details */}
       <div className="flex flex-col justify-between flex-1">
         <div>
-          <h3 className="text-lg font-semibold">{item.name}</h3>
+          <h3 className="text-lg font-semibold">
+            {item.name || item?.productName}
+          </h3>
           <p className="text-sm text-gray-600 mt-1">
             Size: {item.size || "N/A"}
           </p>
-  
-          <p className="text-xl font-bold mt-2">₹{item.price}</p>
+
+          <p className="text-xl font-bold mt-2">
+            ₹{item.price || item.totalPrice}
+          </p>
         </div>
 
         <div className="flex items-center gap-3 mt-4">
           {/* Quantity controls */}
-         
 
           <div className="inline-flex items-center border border-gray-300 rounded-full overflow-hidden shadow-sm w-max">
-  <button
-    className={`px-4 py-1 text-lg font-semibold transition-all ${
-      item.quantity <= 1
-        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
-        : "text-primary hover:bg-gray-200"
-    }`}
-           onClick={() => onQuantityChange(item, item.quantity - 1)}
-            disabled={item.quantity <= 1}
-  >
-    –
-  </button>
+            <button
+              className={`px-4 py-1 text-lg font-semibold transition-all ${
+                item.quantity <= 1
+                  ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                  : "text-primary hover:bg-gray-200"
+              }`}
+              onClick={() => onQuantityChange(item, item.quantity - 1)}
+              disabled={item.quantity <= 1}
+            >
+              –
+            </button>
 
-  <span className="px-5 py-1 text-base font-medium text-gray-700 bg-white select-none">
-    {item.quantity}
-  </span>
+            <span className="px-5 py-1 text-base font-medium text-gray-700 bg-white select-none">
+              {item.quantity}
+            </span>
 
-  <button
-    className={`px-4 py-1 text-lg font-semibold transition-all ${
-      item.quantity >= item?.stockQuantity
-        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
-        : "text-primary hover:bg-gray-200"
-    }`}
-   onClick={() => onQuantityChange(item, item.quantity + 1)}
-  >
-    +
-  </button>
-</div>
+            <button
+              className={`px-4 py-1 text-lg font-semibold transition-all ${
+                item.quantity >= item?.stockQuantity
+                  ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                  : "text-primary hover:bg-gray-200"
+              }`}
+              onClick={() => onQuantityChange(item, item.quantity + 1)}
+            >
+              +
+            </button>
+          </div>
 
           {/* Delete */}
           <button
@@ -484,7 +670,6 @@ const OrderItem = ({ item, onQuantityChange, onRemove }) => {
     </div>
   );
 };
-
 
 const PriceSummary = ({ subtotal, shipping }) => {
   const total = subtotal + shipping;
@@ -514,13 +699,14 @@ const InputField = ({ label, type = "text", value, onChange, error }) => (
       type={type}
       value={value}
       onChange={onChange}
-      className={`w-full border rounded p-2 ${error ? "border-red-500" : ""}`}
+      className={`w-full border border-gray-300 rounded p-2 ${
+        error ? "border-red-500" : ""
+      }`}
       placeholder={label}
     />
     {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
   </div>
 );
-
 
 const CardPaymentOption = ({ selected, onChange, setShowCardModal }) => {
   return (
@@ -534,10 +720,14 @@ const CardPaymentOption = ({ selected, onChange, setShowCardModal }) => {
           type="radio"
           name="payment"
           checked={selected}
-          onChange={onChange}
+          // onChange={onChange}
           className="mr-2"
+          readOnly
+          disabled
         />
-        <span className="font-medium text-lg">Credit or debit card</span>
+        <span className="font-medium text-lg text-gray-400">
+          Credit or debit card
+        </span>
       </div>
 
       {selected && (
@@ -565,7 +755,6 @@ const CardPaymentOption = ({ selected, onChange, setShowCardModal }) => {
     </label>
   );
 };
-
 
 const AddCardModal = ({ onClose, onSubmit }) => {
   const [cardDetails, setCardDetails] = useState({
@@ -613,7 +802,9 @@ const AddCardModal = ({ onClose, onSubmit }) => {
 
         {/* Left Form */}
         <div className="flex-1">
-          <h2 className="font-bold text-lg mb-4">Add a new credit or debit card</h2>
+          <h2 className="font-bold text-lg mb-4">
+            Add a new credit or debit card
+          </h2>
           <div className="space-y-4">
             {/* Card number */}
             <div className="grid grid-cols-4 items-center gap-4">
@@ -627,7 +818,9 @@ const AddCardModal = ({ onClose, onSubmit }) => {
                   className="border w-full p-2 rounded"
                 />
                 {errors.cardNumber && (
-                  <p className="text-red-500 text-sm mt-1">{errors.cardNumber}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.cardNumber}
+                  </p>
                 )}
               </div>
             </div>
@@ -674,7 +867,11 @@ const AddCardModal = ({ onClose, onSubmit }) => {
                 >
                   {Array.from({ length: 10 }, (_, i) => {
                     const year = (new Date().getFullYear() + i).toString();
-                    return <option key={year} value={year}>{year}</option>;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
                   })}
                 </select>
               </div>
@@ -701,7 +898,8 @@ const AddCardModal = ({ onClose, onSubmit }) => {
         {/* Right Info */}
         <div className="w-full sm:w-1/3 border-t sm:border-t-0 sm:border-l sm:pl-6 pt-4 sm:pt-0 flex flex-col items-center justify-start">
           <p className="text-sm mb-4">
-            Please ensure that you enable your card for online payments from your bank’s app.
+            Please ensure that you enable your card for online payments from
+            your bank’s app.
           </p>
           <div className="flex flex-wrap gap-2">
             {[visa, mastercard, amex, rupay].map((img, i) => (
@@ -713,7 +911,6 @@ const AddCardModal = ({ onClose, onSubmit }) => {
     </div>
   );
 };
-
 
 const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
   return (
@@ -727,10 +924,14 @@ const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
           type="radio"
           name="payment"
           checked={selected}
-          onChange={onChange}
+          // onChange={onChange}
           className="accent-primary"
+          readOnly
+          disabled
         />
-        <span className="font-semibold text-lg">Other UPI Apps</span>
+        <span className="font-semibold text-lg text-gray-400">
+          Other UPI Apps
+        </span>
       </div>
 
       {selected && (
@@ -752,11 +953,11 @@ const UpiInputCard = ({ selected, onChange, upiId, setUpiId, onVerify }) => {
             </button>
           </div>
           <p className="text-sm text-gray-700">
-            The UPI ID is in the format of <span className="font-medium">name/phone@bank</span>
+            The UPI ID is in the format of{" "}
+            <span className="font-medium">name/phone@bank</span>
           </p>
         </>
       )}
     </label>
   );
 };
-

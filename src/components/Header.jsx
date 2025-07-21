@@ -14,16 +14,17 @@ import { StaticApi } from "../utils/StaticApi";
 
 export default function Header() {
   const navigate = useNavigate();
-  const location = useLocation();
   const searchRef = useRef(null);
   const isProfileRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [cartLength, setCartLength] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
   const handleProfileToggle = () => {
+    console.log("Comin");
     setIsProfileMenuOpen((prev) => !prev);
   };
 
@@ -41,29 +42,39 @@ export default function Header() {
   };
 
   // Debounced search logic
- useEffect(() => {
-  const delayDebounce = setTimeout(() => {
-    if (searchTerm.trim() !== "") {
-      services
-        .get(`${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`)
-        .then((response) => {
-          setSearchResults([...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data,...response?.data,...response?.data ,...response?.data,...response?.data,...response?.data]);
-        })
-        .catch((err) => {
-          setSearchResults([]);
-        });
-    } else {
-      setSearchResults([]);
-    }
-  }, 500);
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim() !== "") {
+        services
+          .get(
+            `${StaticApi.searchProducts}?name=${encodeURIComponent(searchTerm)}`
+          )
+          .then((response) => {
+            setSearchResults(response?.data || []);
+          })
+          .catch((err) => {
+            setSearchResults([]);
+          });
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
 
-  return () => clearTimeout(delayDebounce);
-}, [searchTerm]);
-
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
 
   const handleLogout = () => {
-    localStorage.clear()
-    navigate('/signin');
+    localStorage.clear();
+    navigate("/signin");
+  };
+  const getCartItems = () => {
+    services
+      .get(`${StaticApi.getUserCart}`)
+      .then((res) => {
+        const data = res?.data?.length || 0;
+        setCartLength(data);
+      })
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -71,7 +82,10 @@ export default function Header() {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSearchResults([]);
       }
-      if (isProfileRef.current && !isProfileRef.current.contains(event.target)) {
+      if (
+        isProfileRef.current &&
+        !isProfileRef.current.contains(event.target)
+      ) {
         setIsProfileMenuOpen(false);
       }
     };
@@ -83,6 +97,10 @@ export default function Header() {
       document.removeEventListener("mousedown", handleClickOutside);
       // document.removeEventListener("touchstart", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    getCartItems();
   }, []);
   return (
     <>
@@ -112,67 +130,113 @@ export default function Header() {
                 className="w-full px-3 py-1 rounded-md text-black border border-transparent ring-1 focus:outline-none focus:ring-2 focus:ring-primary"
               />
 
-
-              {searchResults.length > 0 && (
-                <div ref={searchRef} className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mt-[3px]">
-                  {searchResults?.map((product) => (
-                    <div
-                      key={product.productCode}
-                      className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
-                      onClick={() => handleResultClick(product.productCode)}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-gray-600">₹{product.price}</p>
+              {searchTerm && (
+                <div className="absolute top-full left-0 right-0 bg-white text-black rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto mx-4">
+                  {searchResults.length > 0 ? (
+                    searchResults.map((product) => (
+                      <div
+                        key={product.productCode}
+                        className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200"
+                        onClick={() => handleResultClick(product.productCode)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.image || logo}
+                            alt={product.name}
+                            className="w-10 h-10 object-cover rounded"
+                          />
+                          <div>
+                            <p className="font-medium">{product.name}</p>
+                            <p className="text-sm text-gray-600">
+                              ₹{product.price}
+                            </p>
+                          </div>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      No results found
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Wishlist & Cart */}
+            {/* Wishlist Icon */}
             <button
               onClick={() => navigate(StaticRoutes.wishlist)}
               className="text-white text-2xl hover:text-secondary"
             >
               <AiOutlineHeart />
             </button>
-            <button
-              onClick={() => navigate(StaticRoutes.cart)}
-              className="text-white text-2xl hover:text-secondary"
-            >
-              <AiOutlineShoppingCart />
-            </button>
 
-            {/* Profile */}
+            {/* Cart Icon with Quantity Badge */}
             <div className="relative">
-              <button className="text-white text-2xl hover:text-secondary" onClick={handleProfileToggle}>
-                <AiOutlineUser />
+              <button
+                onClick={() => navigate(StaticRoutes.cart)}
+                className="text-white text-2xl hover:text-secondary"
+              >
+                <AiOutlineShoppingCart />
               </button>
-              {isProfileMenuOpen && (
-                <div ref={isProfileRef} className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50">
-                  <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                    onClick={() => handleProfileNavigate(StaticRoutes.profile)}
-                  >
-                    Profile
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                    onClick={() => handleProfileNavigate(StaticRoutes.orders)}
-                  >
-                    Orders
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </div>
+              {cartLength > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {cartLength}
+                </span>
               )}
             </div>
+
+            {/* User Initial & Welcome */}
+            {localStorage.getItem("userName") ? (
+              <div
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={handleProfileToggle}
+                ref={isProfileRef}
+              >
+                <div className="bg-[#ff9933] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                  {localStorage.getItem("userName").charAt(0).toUpperCase()}
+                </div>
+                {/* <span className="hidden sm:block text-sm font-medium">
+                  Welcome, {localStorage.getItem("userName").split(" ")[0]}
+                </span> */}
+              </div>
+            ) : (
+              // If not logged in, show profile icon with dropdown
+              <div className="relative" ref={isProfileRef}>
+                <button
+                  className="text-white text-2xl hover:text-secondary"
+                  onClick={handleProfileToggle}
+                >
+                  <AiOutlineUser />
+                </button>
+              </div>
+            )}
+
+            {isProfileMenuOpen && (
+              <div
+                ref={isProfileRef}
+                className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50 top-[30px]"
+              >
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleProfileNavigate(StaticRoutes.profile)}
+                >
+                  Profile
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={() => handleProfileNavigate(StaticRoutes.orders)}
+                >
+                  Orders
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -231,7 +295,7 @@ export default function Header() {
             onClick={() => {
               navigate("/signin");
               setIsMobileMenuOpen(false);
-              localStorage.clear()
+              localStorage.clear();
             }}
             className="hover:underline text-sm block"
           >

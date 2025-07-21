@@ -41,9 +41,13 @@ export default function Profile() {
   };
 
   const handleAddAddress = () => {
-    const apiCall = editIndex !== null
-      ? services.put(`${StaticApi.updateAddress}/${newAddress.addressId}`, newAddress)
-      : services.post(StaticApi.createAddress, newAddress);
+    const apiCall =
+      editIndex !== null
+        ? services.put(
+            `${StaticApi.updateAddress}/${newAddress.addressId}`,
+            newAddress
+          )
+        : services.post(StaticApi.createAddress, newAddress);
 
     apiCall
       .then(() => {
@@ -144,8 +148,12 @@ export default function Profile() {
             >
               <div>
                 <p className="font-semibold">{addr.name}</p>
-                <p>{addr.addressLine1}, {addr.addressLine2}</p>
-                <p>{addr.city}, {addr.state} - {addr.postalCode}</p>
+                <p>
+                  {addr.addressLine1}, {addr.addressLine2}
+                </p>
+                <p>
+                  {addr.city}, {addr.state} - {addr.postalCode}
+                </p>
                 <p>{addr.country}</p>
                 <p className="text-sm text-gray-500">{addr.phone}</p>
                 {addr.default && (
@@ -200,7 +208,9 @@ export default function Profile() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-primary">My Orders</h3>
-            <p className="text-sm text-gray-600">View all your past and current orders</p>
+            <p className="text-sm text-gray-600">
+              View all your past and current orders
+            </p>
           </div>
         </div>
       </div>
@@ -244,7 +254,10 @@ export default function Profile() {
                   label={label}
                   value={newAddress[key]}
                   onChange={(e) =>
-                    setNewAddress((prev) => ({ ...prev, [key]: e.target.value }))
+                    setNewAddress((prev) => ({
+                      ...prev,
+                      [key]: e.target.value,
+                    }))
                   }
                 />
               ))}

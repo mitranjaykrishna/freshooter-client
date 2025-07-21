@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import SignupLayout from "./layout/SignupLayout";
 import Signin from "../pages/Signin";
 import { StaticRoutes } from "../utils/StaticRoutes";
@@ -13,11 +13,14 @@ import Orders from "../pages/Orders";
 import Profile from "../pages/Profile";
 import Checkout from "../pages/Checkout";
 import Terms from "../pages/Terms";
+import ScrollToTop from "../components/ScrollToTop";
+import ThankYouPage from "../pages/Thankyou";
 
 export default function Routing() {
   return (
     <>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route element={<SignupLayout />}>
             <Route path={StaticRoutes?.signin} element={<Signin />} />
@@ -32,6 +35,7 @@ export default function Routing() {
             <Route path={StaticRoutes?.profile} element={<Profile />} />
             <Route path={StaticRoutes?.checkout} element={<Checkout />} />
             <Route path={StaticRoutes?.terms} element={<Terms />} />
+            <Route path={StaticRoutes?.thankYou} element={<ThankYouPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

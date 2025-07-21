@@ -29,7 +29,9 @@ export default function Wishlist() {
       const enrichedData = await Promise.all(
         wishlist.map(async (item) => {
           try {
-            const response = await services.get(`${StaticApi.getProductByProductCode}/${item.productCode}`);
+            const response = await services.get(
+              `${StaticApi.getProductByProductCode}/${item.productCode}`
+            );
             return { ...item, ...response.data.data };
           } catch {
             return { ...item };
@@ -46,7 +48,6 @@ export default function Wishlist() {
   };
 
   const getUserCart = async () => {
-
     try {
       const res = await services.get(`${StaticApi.getUserCart}`);
       const cartItems = res?.data || [];
@@ -57,44 +58,64 @@ export default function Wishlist() {
     }
   };
 
-  const handleAddToCart = (productCode, quantity = 1) => {
+  const handleAddToCart = (productCode, quantity = 1, shouldNavigate) => {
     services
-      .post(`${StaticApi.addToCart}?userId=${userID}&productCode=${productCode}&quantity=${quantity}`)
+      .post(
+        `${StaticApi.addToCart}?productCode=${productCode}&quantity=${quantity}`
+      )
       .then(() => {
         toast.success("Added to cart");
         setCartproductCodes((prev) => [...prev, productCode]);
+        if (shouldNavigate) {
+          navigate(StaticRoutes.checkout);
+        }
       })
-      .catch(() => toast.error("Failed to add to cart"));
+      .catch(() => {
+        if (shouldNavigate) {
+          toast.error("Something went wrong");
+        } else {
+          toast.error("Failed to add to cart");
+        }
+      });
   };
 
   const handleRemoveFromCart = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromCart}?productCode=${productCode}&quantity=1`)
+      .delete(`${StaticApi.removeProductFromCart}?productCode=${productCode}`)
       .then(() => {
         toast.success("Removed from cart");
-        setCartproductCodes((prev) => prev.filter((code) => code !== productCode));
+        setCartproductCodes((prev) =>
+          prev.filter((code) => code !== productCode)
+        );
       })
       .catch(() => toast.error("Failed to remove from cart"));
   };
 
   const handleBuyNow = (item) => {
-      const updatedItems = [item];
+    const updatedItems = [item];
 
-  localStorage.setItem("selectedCheckoutItems", JSON.stringify(updatedItems));
-    navigate("/checkout");
+    localStorage.setItem("selectedCheckoutItems", JSON.stringify(updatedItems));
+    handleAddToCart(item.productCode, 1, true);
   };
 
   const handleRemoveFromWishlist = (productCode) => {
     services
-      .delete(`${StaticApi.removeFromWishlist}?userId=${userID}&productCode=${productCode}`)
+      .delete(
+        `${StaticApi.removeFromWishlist}?userId=${userID}&productCode=${productCode}`
+      )
       .then(() => {
         toast.success("Removed from wishlist");
-        setWishlistItems((prev) => prev.filter((item) => item.productCode !== productCode));
+        setWishlistItems((prev) =>
+          prev.filter((item) => item.productCode !== productCode)
+        );
       })
       .catch(() => toast.error("Failed to remove item"));
   };
 
-  const totalSummary = wishlistItems.reduce((sum, item) => sum + (item.price || 0), 0);
+  const totalSummary = wishlistItems.reduce(
+    (sum, item) => sum + (item.price || 0),
+    0
+  );
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -108,30 +129,41 @@ export default function Wishlist() {
       <div className="w-full h-full p-5 flex flex-col gap-6 rounded-2xl bg-white">
         {!isLoggedIn ? (
           <div className="text-center  text-primary text-lg font-medium">
-         Please log in to view your wishlist. <div className="w-max flex self-center justify-self-center mt-4"> <ButtonPrimary
-                              label="Login " 
-                              handleOnClick={() => navigate(StaticRoutes.signin)}
-                            /> </div>  <img
-                          src={login}
-                          alt="login"
-                          className="w-full object-cover"
-                        />  
+            Please log in to view your wishlist.{" "}
+            <div className="w-max flex self-center justify-self-center mt-4">
+              {" "}
+              <ButtonPrimary
+                label="Login "
+                handleOnClick={() => navigate(StaticRoutes.signin)}
+              />{" "}
+            </div>{" "}
+            <img src={login} alt="login" className="w-full object-cover" />
           </div>
         ) : (
           <>
-            <span className="text-xl font-semibold text-primary">Your Wishlist</span>
+            <span className="text-xl font-semibold text-primary">
+              Your Wishlist
+            </span>
 
             {loading ? (
               <div className="text-center py-10 text-gray-500">Loading...</div>
             ) : wishlistItems.length === 0 ? (
-              <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center"> <img
-                          src={empty}
-                          alt="empty"
-                          className="w-full object-cover"
-                        /> <div className="w-max gap-[20px] flex flex-col justify-center items-center"> Your wishlist is empty. <ButtonPrimary
-                              label="Explore Products"
-                              handleOnClick={() => navigate("/")}
-                            /> </div>   </div>
+              <div className="text-center py-10 text-gray-500 flex flex-col justify-center items-center">
+                {" "}
+                <img
+                  src={empty}
+                  alt="empty"
+                  className="w-full object-cover"
+                />{" "}
+                <div className="w-max gap-[20px] flex flex-col justify-center items-center">
+                  {" "}
+                  Your wishlist is empty.{" "}
+                  <ButtonPrimary
+                    label="Explore Products"
+                    handleOnClick={() => navigate("/")}
+                  />{" "}
+                </div>{" "}
+              </div>
             ) : (
               <>
                 <div className="w-full flex flex-col gap-4">
@@ -141,7 +173,12 @@ export default function Wishlist() {
                       className="flex flex-col sm:flex-row items-stretch border border-quaternary rounded-lg overflow-hidden"
                     >
                       {/* Image */}
-                      <div className="sm:w-[160px] bg-quaternary flex-shrink-0">
+                      <div
+                        className="sm:w-[160px] bg-quaternary flex-shrink-0"
+                        onClick={() => {
+                          navigate(`/product/${item.productCode}`);
+                        }}
+                      >
                         <img
                           src={item.imageUrl || dairydumm}
                           alt={item.name}
@@ -151,18 +188,31 @@ export default function Wishlist() {
 
                       {/* Details */}
                       <div className="flex flex-col justify-between p-4 gap-3 flex-1">
-                        <div>
-                          <h3 className="text-primary font-semibold text-base sm:text-lg">{item.name}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{item.category || "Unknown Category"}</p>
+                        <div
+                          onClick={() => {
+                            navigate(`/product/${item.productCode}`);
+                          }}
+                        >
+                          <h3 className="text-primary font-semibold text-base sm:text-lg">
+                            {item.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {item.category || "Unknown Category"}
+                          </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-primary text-lg font-semibold">₹{item.price?.toFixed(2)}</span>
-                            {item.originalPrice && item.originalPrice > item.price && (
-                              <span className="line-through text-sm text-gray-400">
-                                ₹{item.originalPrice?.toFixed(2)}
-                              </span>
-                            )}
+                            <span className="text-primary text-lg font-semibold">
+                              ₹{item.price?.toFixed(2)}
+                            </span>
+                            {item.originalPrice &&
+                              item.originalPrice > item.price && (
+                                <span className="line-through text-sm text-gray-400">
+                                  ₹{item.originalPrice?.toFixed(2)}
+                                </span>
+                              )}
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">Added on: {item.addedDate || "N/A"}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Added on: {item.addedDate || "N/A"}
+                          </p>
                         </div>
 
                         {/* Actions */}
@@ -170,12 +220,16 @@ export default function Wishlist() {
                           {cartproductCodes.includes(item.productCode) ? (
                             <ButtonPrimary
                               label="Remove from Cart"
-                              handleOnClick={() => handleRemoveFromCart(item.productCode)}
+                              handleOnClick={() =>
+                                handleRemoveFromCart(item.productCode)
+                              }
                             />
                           ) : (
                             <ButtonPrimary
                               label="Add to Cart"
-                              handleOnClick={() => handleAddToCart(item.productCode)}
+                              handleOnClick={() =>
+                                handleAddToCart(item.productCode)
+                              }
                             />
                           )}
 
@@ -185,7 +239,9 @@ export default function Wishlist() {
                           />
 
                           <button
-                            onClick={() => handleRemoveFromWishlist(item.productCode)}
+                            onClick={() =>
+                              handleRemoveFromWishlist(item.productCode)
+                            }
                             className="p-2 border rounded-md hover:bg-red-50 text-red-500 transition-colors"
                             title="Remove from Wishlist"
                           >
@@ -201,7 +257,9 @@ export default function Wishlist() {
                 <div className="mt-6 border-t pt-4 text-right">
                   <span className="text-base sm:text-lg font-medium text-gray-700">
                     Total ({wishlistItems.length} items):{" "}
-                    <span className="text-primary font-semibold">₹{totalSummary.toFixed(2)}</span>
+                    <span className="text-primary font-semibold">
+                      ₹{totalSummary.toFixed(2)}
+                    </span>
                   </span>
                 </div>
               </>
