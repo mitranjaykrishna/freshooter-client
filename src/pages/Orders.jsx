@@ -121,6 +121,47 @@ export default function Orders() {
     );
   };
 
+  const buyNow = async (orderItems) => {
+    if (!orderItems || orderItems.length === 0) return;
+
+    try {
+      // Add all items to the cart
+      await Promise.all(
+        orderItems.map((item) =>
+          services.post(
+            `${StaticApi.addToCart}?productCode=${item.productCode}&quantity=${
+              item.quantity || 1
+            }`
+          )
+        )
+      );
+
+      toast.success("All items added to cart");
+
+      // Set selected items for checkout (if needed)
+      const updatedItems = orderItems.map((item) => ({
+        productId: item.productId,
+        productCode: item.productCode,
+        name: item.name,
+        imageUrl: item.imageUrl,
+        price: item.price,
+        quantity: item.quantity || 1,
+        totalPrice: item.price * (item.quantity || 1),
+      }));
+
+      localStorage.setItem(
+        "selectedCheckoutItems",
+        JSON.stringify(updatedItems)
+      );
+
+      // Navigate to checkout
+      navigate("/checkout");
+    } catch (error) {
+      toast.error("Failed to add items to cart");
+      console.error("Error during buy again:", error);
+    }
+  };
+
   useEffect(() => {
     if (isLoggedIn) {
       getOrders();
@@ -265,41 +306,38 @@ export default function Orders() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 mt-4">
-                {order.orderStatus === "Delivered" && (
-                  <>
-                    <button
-                      onClick={() => navigate("/")}
-                      className="bg-[#4296879a] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300"
-                    >
-                      Buy Again
-                    </button>
-                    <button className="bg-[#ff9933] text-black font-medium px-4 py-1.5 rounded-md text-sm hover:bg-yellow-300">
-                      Get product support
-                    </button>
-                    <div className="flex flex-wrap gap-3 mt-4">
-                      <button
-                        onClick={() =>
-                          navigate("/return", { state: { order } })
-                        }
-                        className="bg-blue-500 text-white font-medium px-4 py-1.5 rounded-md text-sm hover:bg-blue-600"
-                      >
-                        Return
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigate("/exchange", { state: { order } })
-                        }
-                        className="bg-purple-500 text-white font-medium px-4 py-1.5 rounded-md text-sm hover:bg-purple-600"
-                      >
-                        Exchange
-                      </button>
-                    </div>
-                  </>
-                )}
+                {/* {order.orderStatus === "Delivered" && ( */}
+                <>
+                  <div
+                    onClick={() => buyNow(order.orderItems)}
+                    className="bg-[#4296879a] text-black font-medium py-[10px] px-[10px] cursor-pointer flex items-center justify-center rounded-md text-sm hover:bg-yellow-300 max-h"
+                  >
+                    Buy Again
+                  </div>
+                  <div
+                    onClick={() => navigate(StaticRoutes.terms)}
+                    className="bg-[#ff9933] text-black font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-yellow-300 flex items-center justify-center max-h"
+                  >
+                    Get product support
+                  </div>
+                  <div
+                    onClick={() => returnOrder(order)}
+                    className="bg-blue-500 text-white font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-blue-600 flex items-center justify-center max-h"
+                  >
+                    Return
+                  </div>
+                  <div
+                    onClick={() => exchangeOrder(order)}
+                    className="bg-purple-500 text-white font-medium px-[10px] py-[10px] cursor-pointer rounded-md text-sm hover:bg-purple-600 flex items-center justify-center max-h"
+                  >
+                    Exchange
+                  </div>
+                </>
+                {/* )} */}
                 {!["Delivered", "Cancelled"].includes(order.orderStatus) && (
                   <button
                     onClick={() => openCancelModal(order)}
-                    className="border border-red-500 text-red-500 font-medium px-4 py-1.5 rounded-md text-sm hover:bg-red-50"
+                    className="border border-red-500 text-red-500 font-medium p-[5px] rounded-md text-sm hover:bg-red-50"
                   >
                     Cancel Order
                   </button>
